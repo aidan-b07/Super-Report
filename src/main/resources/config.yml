@@ -1,0 +1,93 @@
+#########################################################
+#                     Super-Report                      #
+#  For information and support join the discord server  #
+#             @https://discord.gg/3wqbfmX74P            #
+#########################################################
+
+#MYSQL DATABASE
+MySQL:
+  MySqlEnabled: false
+  host: localhost
+  port: 3306
+  database: superreport
+  username: root
+  password: password
+
+DebugMode: false
+
+#####~~REPORT MENU~~#####
+ReportMenu:
+  #Set Size of menu - VERY IMPORTANT NOTE: MUST BE A MULTIPLE OF 9 ie. 27, 36
+  Size: 36
+  #Set name of menu (the text at the top)
+  Name: "Report Menu"
+  #Items of the menu
+  Items:
+    Slot:
+
+    Fill:
+      Material: "gray_stained_glass_pane"
+      Name: ""
+
+#####~~DISCORD BOT~~#####
+DiscordBot:
+  Enabled: false
+  Token: "TOKENHERE"
+  ServerID: "SERVERIDHERE"
+  ReportMessage:
+    ChannelID: "CHANNELIDHERE"
+    Layout:
+      Title: "New Report"
+      Author: "Report Bot"
+      Color: "FF0000"
+      #This is just the message that is entered outside the embed. Use the format "<@&ROLE_ID>" to ping a role
+      Message: "Hey <@&739825208948555870>, there's a new report!"
+      Thumbnail: "https://i.imgur.com/175t1FU.png"
+      Description:
+        - '**Reported Player Name** - {reported.name}'
+        - "**Reported Player UUID** - {reported.uuid}"
+        - "**Reported Player Ip** - {reported.ip}"
+        - ''
+        - "**Reporter Player Name** - {reporter.name}"
+        - "**Reporter Player UUID** - {reporter.uuid}"
+        - "**Reporter Player Ip** - {reporter.ip}"
+        - ''
+        - "**Reason Reported** - {reason}"
+  BanMessage:
+    ChannelID: "CHANNELIDHERE"
+    Layout:
+      Title: "Player Banned"
+      Author: "Report Bot"
+      Color: "FF0000"
+      Message: "Hey <@739825208948555870>, there's a new ban!"
+      Thumbnail: "https://i.imgur.com/175t1FU.png"
+      Description:
+        - '**Banned Player Name** - {banned.name}'
+        - '**Banned Player UUID** - {banned.uuid}'
+        - '**Banned Player Ip** - {banned.ip}'
+        - ''
+        - '**Punisher Name** - {punisher.name}'
+        - '**Punisher UUID** - {punisher.uuid}'
+        - '**Punisher Ip** - {punisher.ip}'
+        - ''
+        - '**Duration** - {ban.duration}'
+        - '**Reason** - {ban.reason}'
+  MuteMessage:
+    ChannelID: "CHANNELIDHERE"
+    Layout:
+      Title: "Player Muted"
+      Author: "Report Bot"
+      Color: "FF0000"
+      Message: "Hey everyone, there's a new mute!"
+      Thumbnail: "https://i.imgur.com/175t1FU.png"
+      Description:
+        - '**Muted Player Name** - {muted.name}'
+        - '**Muted Player UUID** - {muted.uuid}'
+        - '**Muted Player Ip** - {muted.ip}'
+        - ''
+        - '**Punisher Name** - {punisher.name}'
+        - '**Punisher UUID** - {punisher.uuid}'
+        - '**Punisher Ip** - {punisher.ip}'
+        - ''
+        - '**Duration** - {mute.duration}'
+        - '**Reason** - {mute.reason}'

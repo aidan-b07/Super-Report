@@ -1,0 +1,50 @@
+classpath   "C:\Program Files\Java\jre1.8.0_271\lib\rt.jar"
+            "C:\Users\Aidan\Desktop\Servers\1.8-Server\spigot.jar"
+            "C:\Users\Aidan\Desktop\Servers\Kotlin-1.jar"
+            "C:\Users\Aidan\Desktop\Servers\Kotlin-2.jar"
+            "C:\Users\Aidan\Desktop\Servers\okhttp.jar";
+
+ignoreMissingReferences;
+
+open "%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!net/*/*.class"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!com/*/*.class"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!mojang-translations/*/*.class"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!okhttp3/*/*.class"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!okhttp3/*/*/*.class"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!okhttp3/*.class"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!org/*"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!okio/*"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!javax/*/*.class"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!kotlin/*/*.class"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!kotlin/*"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!kotlin/jvm/*/*.class"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!org/*/*.class"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!com/*/*.class"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!gnu/*/*.class"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!gnu/*/*/*.class"
+     -"%project.build.directory%%file.separator%%project.build.finalName%.%project.packaging%!gnu/*/*/*"
+;
+
+exclude     org.bukkit.*. and
+            public *.^* and
+            *.* public * and
+            *.* public *(*);
+
+obfuscate   changeLogFileIn=""
+            changeLogFileOut="ChangeLog.txt"
+            keepInnerClassInfo=true
+            keepGenericsInfo=false
+            obfuscateFlow=aggressive
+            exceptionObfuscation=heavy
+            encryptStringLiterals=normal
+            mixedCaseClassNames=true
+            randomize=true
+            collapsePackagesWithDefault=""
+            localVariables=obfuscate
+            lineNumbers=scramble
+            autoReflectionHandling=normal
+            obfuscateReferences=none
+            methodParameterChanges=random;
+
+saveAll     archiveCompression=all "C:\Users\Aidan\Builds\SuperReportBuild\obfuscation";

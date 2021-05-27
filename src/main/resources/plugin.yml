@@ -1,0 +1,26 @@
+name: SuperReport
+version: 1.4
+main: me.Superbility.SuperReport.Main
+loadbefore:
+  - LiteBans
+commands:
+  report:
+    description: Reports players!
+    usage: /<command>
+  reports:
+    description: View Reports!
+    usage: /<command>
+  unban:
+    description: Unban a player
+    usage: /<command>
+  unmute:
+    description: Unmute a player
+    usage: /<command>
+  punish:
+    description: Punish a player
+    usage: /<command>
+    aliases:
+      - ban
+      - mute
+      - tempban
+      - tempmute
