@@ -1,21 +1,24 @@
 name: SuperReport
+author: Superbility
 version: 1.4
-main: me.Superbility.SuperReport.Main
-loadbefore:
-  - LiteBans
+main: com.superdevelopment.superreport.Main
 commands:
   report:
     description: Reports players!
     usage: /<command>
+    permission: superreport.report
   reports:
     description: View Reports!
     usage: /<command>
+    permission: superreport.reports
   unban:
     description: Unban a player
     usage: /<command>
+    permission: superreport.unban
   unmute:
     description: Unmute a player
     usage: /<command>
+    permission: superreport.unmute
   punish:
     description: Punish a player
     usage: /<command>
@@ -24,3 +27,28 @@ commands:
       - mute
       - tempban
       - tempmute
+    permission: superreport.punish
+permissions:
+  superreport.report:
+    description: Allows use of the '/report' command. Typically used by players
+    default: true
+  superreport.reports:
+    description: Allows use of the '/reports' command. Typically used by mods / admins
+    default: op
+  superreport.unban:
+    description: Allows use of the '/unban' command. Typically used by admins
+    default: op
+  superreport.unmute:
+    description: Allows use of the '/unmute' command. Typically used by admins
+    default: op
+  superreport.punish:
+    description: Allows use of the '/punish' command. Typically used by admins
+    default: op
+  superreport.notifications:
+    description: Displays a notification of recent reports to plays on join. Typically used by mods / admins
+    default: op
+  superreport.mutebypass:
+    description: Prevents users with this permission from being muted. Typically used by staff
+    default: op
+  superreport.banbypass:
+    description: Prevents users with this permission from being banned. Typically used by staff
