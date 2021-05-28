@@ -1,4 +1,4 @@
-package com.superdevelopment.superreport.configs.Database;
+package com.superdevelopment.superreport.configs.database;
 
 import com.superdevelopment.superreport.GetValues;
 

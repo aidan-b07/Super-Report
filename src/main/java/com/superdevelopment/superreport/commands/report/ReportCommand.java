@@ -1,4 +1,4 @@
-package com.superdevelopment.superreport.commands.Report;
+package com.superdevelopment.superreport.commands.report;
 
 import com.superdevelopment.superreport.configs.MessagesConfig;
 import com.superdevelopment.superreport.DiscordBot;

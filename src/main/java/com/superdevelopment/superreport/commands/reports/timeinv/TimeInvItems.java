@@ -1,4 +1,4 @@
-package com.superdevelopment.superreport.commands.Reports.TimeInventory;
+package com.superdevelopment.superreport.commands.reports.timeinv;
 
 import com.superdevelopment.superreport.utils.GetMaterial;
 import org.bukkit.ChatColor;

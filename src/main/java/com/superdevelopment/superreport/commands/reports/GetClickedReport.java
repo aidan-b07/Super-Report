@@ -1,6 +1,6 @@
-package com.superdevelopment.superreport.commands.Reports;
+package com.superdevelopment.superreport.commands.reports;
 
-import com.superdevelopment.superreport.commands.Reports.ControlPanel.ControlPanelItems;
+import com.superdevelopment.superreport.commands.reports.controlpanel.ControlPanelItems;
 import com.superdevelopment.superreport.GetValues;
 import com.superdevelopment.superreport.Main;
 import com.superdevelopment.superreport.utils.GetInventoryName;

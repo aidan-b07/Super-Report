@@ -1,6 +1,6 @@
-package com.superdevelopment.superreport.commands.Reports.Reasons;
+package com.superdevelopment.superreport.commands.reports.reasons;
 
-import com.superdevelopment.superreport.commands.Reports.FilePunishment;
+import com.superdevelopment.superreport.commands.reports.FilePunishment;
 import com.superdevelopment.superreport.configs.BanReasonsConfig;
 import com.superdevelopment.superreport.GetValues;
 import com.superdevelopment.superreport.utils.GetInventoryName;

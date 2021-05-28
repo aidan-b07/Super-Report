@@ -1,6 +1,6 @@
 package com.superdevelopment.superreport.commands;
 
-import com.superdevelopment.superreport.commands.Reports.Punishments.PunishmentChoiceItems;
+import com.superdevelopment.superreport.commands.reports.punishments.PunishmentChoiceItems;
 import com.superdevelopment.superreport.GetValues;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

@@ -1,9 +1,9 @@
-package com.superdevelopment.superreport.commands.Reports.TimeInventory;
+package com.superdevelopment.superreport.commands.reports.timeinv;
 
 import com.superdevelopment.superreport.GetValues;
 import com.superdevelopment.superreport.utils.GetInventoryName;
 import com.superdevelopment.superreport.utils.GetMaterial;
-import com.superdevelopment.superreport.commands.Reports.Reasons.ReasonsInvItems;
+import com.superdevelopment.superreport.commands.reports.reasons.ReasonsInvItems;
 import com.superdevelopment.superreport.utils.FormatTime;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;

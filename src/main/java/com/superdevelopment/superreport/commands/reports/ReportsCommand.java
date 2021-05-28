@@ -1,4 +1,4 @@
-package com.superdevelopment.superreport.commands.Reports;
+package com.superdevelopment.superreport.commands.reports;
 
 import com.superdevelopment.superreport.GetValues;
 import com.superdevelopment.superreport.Main;

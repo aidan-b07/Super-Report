@@ -1,4 +1,4 @@
-package com.superdevelopment.superreport.commands.Redeem;
+package com.superdevelopment.superreport.commands.redeem;
 
 import com.superdevelopment.superreport.configs.MessagesConfig;
 import com.superdevelopment.superreport.GetValues;

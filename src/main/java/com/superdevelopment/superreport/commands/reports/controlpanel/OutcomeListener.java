@@ -1,7 +1,7 @@
-package com.superdevelopment.superreport.commands.Reports.ControlPanel;
+package com.superdevelopment.superreport.commands.reports.controlpanel;
 
-import com.superdevelopment.superreport.commands.Reports.DismissInventory.DismissInvItems;
-import com.superdevelopment.superreport.commands.Reports.Punishments.PunishmentChoiceItems;
+import com.superdevelopment.superreport.commands.reports.dismissinv.DismissInvItems;
+import com.superdevelopment.superreport.commands.reports.punishments.PunishmentChoiceItems;
 import com.superdevelopment.superreport.utils.GetInventoryName;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

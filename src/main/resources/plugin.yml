@@ -1,6 +1,6 @@
 name: SuperReport
 author: Superbility
-version: 1.4
+version: 1.5
 main: com.superdevelopment.superreport.Main
 commands:
   report:

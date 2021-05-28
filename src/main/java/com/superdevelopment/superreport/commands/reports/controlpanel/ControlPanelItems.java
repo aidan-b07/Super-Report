@@ -1,4 +1,4 @@
-package com.superdevelopment.superreport.commands.Reports.ControlPanel;
+package com.superdevelopment.superreport.commands.reports.controlpanel;
 
 import com.superdevelopment.superreport.GetValues;
 import com.superdevelopment.superreport.utils.GetMaterial;

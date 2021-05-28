@@ -1,6 +1,6 @@
-package com.superdevelopment.superreport.commands.Reports.Punishments;
+package com.superdevelopment.superreport.commands.reports.punishments;
 
-import com.superdevelopment.superreport.commands.Reports.TimeInventory.TimeInvItems;
+import com.superdevelopment.superreport.commands.reports.timeinv.TimeInvItems;
 import com.superdevelopment.superreport.GetValues;
 import com.superdevelopment.superreport.utils.GetInventoryName;
 import org.bukkit.Bukkit;

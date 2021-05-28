@@ -1,4 +1,4 @@
-package com.superdevelopment.superreport.commands.Reports.DismissInventory;
+package com.superdevelopment.superreport.commands.reports.dismissinv;
 
 import com.superdevelopment.superreport.utils.GetMaterial;
 import org.bukkit.ChatColor;

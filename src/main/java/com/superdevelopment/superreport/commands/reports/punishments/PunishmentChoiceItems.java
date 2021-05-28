@@ -1,4 +1,4 @@
-package com.superdevelopment.superreport.commands.Reports.Punishments;
+package com.superdevelopment.superreport.commands.reports.punishments;
 
 import com.superdevelopment.superreport.utils.GetMaterial;
 import org.bukkit.ChatColor;
