@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Installs the plugin into a local Paper test server, downloading the server first if needed.
+    Called by maven-antrun-plugin during `mvn package` (see pom.xml), which passes in:
+      server.version  Minecraft version, e.g. 1.8.8 or 26.3
+      server.dir      folder of that test server (run/<version>)
+      plugin.jar      the built plugin jar
+      plugin.name     file name to install it as
+      eula.file       shared eula.txt copied into each server folder
+      work.dir        scratch folder for API responses (target/)
+-->
+<project name="test-server" default="deploy">
+
+    <target name="deploy" depends="install-plugin, download-server"/>
+
+    <target name="install-plugin">
+        <mkdir dir="${server.dir}/plugins"/>
+        <copy file="${plugin.jar}" tofile="${server.dir}/plugins/${plugin.name}" overwrite="true"/>
+        <!-- Reuse the EULA answer from run/eula.txt for every version folder -->
+        <copy file="${eula.file}" todir="${server.dir}" failonerror="false" quiet="true"/>
+    </target>
+
+    <target name="check-server">
+        <available file="${server.dir}/server.jar" property="server.jar.present"/>
+    </target>
+
+    <target name="download-server" depends="check-server" unless="server.jar.present">
+        <echo message="Downloading latest Paper build for ${server.version}..."/>
+        <property name="build.json" location="${work.dir}/paper-${server.version}.json"/>
+        <get src="https://fill.papermc.io/v3/projects/paper/versions/${server.version}/builds/latest"
+             dest="${build.json}"/>
+
+        <loadfile property="paper.url" srcFile="${build.json}">
+            <filterchain>
+                <tokenfilter>
+                    <replaceregex pattern="^.*&quot;url&quot;:&quot;([^&quot;]+)&quot;.*$" replace="\1"/>
+                </tokenfilter>
+                <striplinebreaks/>
+            </filterchain>
+        </loadfile>
+        <loadfile property="paper.sha256" srcFile="${build.json}">
+            <filterchain>
+                <tokenfilter>
+                    <replaceregex pattern="^.*&quot;sha256&quot;:&quot;([0-9a-f]+)&quot;.*$" replace="\1"/>
+                </tokenfilter>
+                <striplinebreaks/>
+            </filterchain>
+        </loadfile>
+
+        <get src="${paper.url}" dest="${server.dir}/server.jar.part"/>
+        <checksum file="${server.dir}/server.jar.part" algorithm="SHA-256"
+                  property="${paper.sha256}" verifyProperty="paper.sha.ok"/>
+        <fail message="Paper download failed its SHA-256 check">
+            <condition>
+                <not><istrue value="${paper.sha.ok}"/></not>
+            </condition>
+        </fail>
+        <move file="${server.dir}/server.jar.part" tofile="${server.dir}/server.jar"/>
+    </target>
+</project>
