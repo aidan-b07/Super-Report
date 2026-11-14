@@ -1,7 +1,7 @@
 package dev.aidanbooth.superreport.commands.reports.controlpanel;
 
+import com.cryptomorin.xseries.XMaterial;
 import dev.aidanbooth.superreport.GetValues;
-import dev.aidanbooth.superreport.utils.GetMaterial;
 import dev.aidanbooth.superreport.Main;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.Inventory;
@@ -45,9 +45,9 @@ public class ControlPanelItems {
     public void addReportedProfile(Inventory inv, ItemStack item, ResultSet result, Boolean red) throws SQLException {
         ItemStack reported;
         if(red) {
-            reported = GetMaterial.XMaterial.RED_WOOL.parseItem(); //Creates item
+            reported = XMaterial.RED_WOOL.parseItem(); //Creates item
         } else {
-            reported = GetMaterial.XMaterial.LIME_WOOL.parseItem();
+            reported = XMaterial.LIME_WOOL.parseItem();
         }
         ItemMeta reportedMeta = reported.getItemMeta();
         List<String> reportedLore = item.getItemMeta().getLore(); //Gets item lore
@@ -75,7 +75,7 @@ public class ControlPanelItems {
         }
     } //Reported and reporter profile
     public void addPunishmentItem(Inventory inv) {
-        ItemStack punishment = new ItemStack(GetMaterial.XMaterial.DIAMOND_SWORD.parseMaterial());
+        ItemStack punishment = new ItemStack(XMaterial.DIAMOND_SWORD.parseMaterial());
         ItemMeta punishmentMeta = punishment.getItemMeta();
         punishmentMeta.setDisplayName(ChatColor.RED + "Punish");
         punishmentMeta.setLore(Arrays.asList(ChatColor.GRAY + "Click here to view", ChatColor.GRAY + "all punishments!"));
@@ -83,7 +83,7 @@ public class ControlPanelItems {
         inv.setItem(12, punishment);
     } //Add punishment items
     public void addDismissItem(Inventory inv) {
-        ItemStack dismiss = new ItemStack(GetMaterial.XMaterial.BARRIER.parseMaterial());
+        ItemStack dismiss = new ItemStack(XMaterial.BARRIER.parseMaterial());
         ItemMeta dismissMeta = dismiss.getItemMeta();
         dismissMeta.setDisplayName(ChatColor.RED + "Dismiss");
         dismissMeta.setLore(Arrays.asList(
@@ -93,7 +93,7 @@ public class ControlPanelItems {
         inv.setItem(14, dismiss);
     } //Add dismiss items
     public void addItems(Inventory inv) {
-        ItemStack fillItem = GetMaterial.XMaterial.GRAY_STAINED_GLASS_PANE.parseItem();
+        ItemStack fillItem = XMaterial.GRAY_STAINED_GLASS_PANE.parseItem();
         ItemMeta fillItemMeta = fillItem.getItemMeta();
         fillItemMeta.setDisplayName(" ");
         fillItem.setItemMeta(fillItemMeta);

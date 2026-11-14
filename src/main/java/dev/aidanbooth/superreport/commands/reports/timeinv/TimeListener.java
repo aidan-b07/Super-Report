@@ -1,8 +1,8 @@
 package dev.aidanbooth.superreport.commands.reports.timeinv;
 
+import com.cryptomorin.xseries.XMaterial;
 import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.utils.GetInventoryName;
-import dev.aidanbooth.superreport.utils.GetMaterial;
 import dev.aidanbooth.superreport.commands.reports.reasons.ReasonsInvItems;
 import dev.aidanbooth.superreport.utils.FormatTime;
 import org.bukkit.ChatColor;
@@ -120,7 +120,7 @@ public class TimeListener implements Listener {
         }
     }
     private void changeItem(Inventory inv, Player player) {
-        ItemStack item = new ItemStack(GetMaterial.XMaterial.NETHER_STAR.parseMaterial());
+        ItemStack item = new ItemStack(XMaterial.NETHER_STAR.parseMaterial());
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + FormatTime.formatTime(time.get(player)));
         if(time.get(player) == -1) {

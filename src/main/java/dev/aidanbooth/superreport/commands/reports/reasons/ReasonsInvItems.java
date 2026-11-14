@@ -1,9 +1,9 @@
 package dev.aidanbooth.superreport.commands.reports.reasons;
 
+import com.cryptomorin.xseries.XMaterial;
 import dev.aidanbooth.superreport.configs.BanReasonsConfig;
 import dev.aidanbooth.superreport.configs.MuteReasonsConfig;
 import dev.aidanbooth.superreport.GetValues;
-import dev.aidanbooth.superreport.utils.GetMaterial;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -46,7 +46,7 @@ public class ReasonsInvItems {
         player.openInventory(inv);
     }
     public void addItem(Material mat, Inventory inv, int slot, String name, int amount) {
-        ItemStack item = new ItemStack(GetMaterial.XMaterial.valueOf(mat.toString()).parseItem());
+        ItemStack item = new ItemStack(XMaterial.valueOf(mat.toString()).parseItem());
         ItemMeta meta = item.getItemMeta();
         item.setAmount(amount);
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
@@ -54,7 +54,7 @@ public class ReasonsInvItems {
         inv.setItem(slot, item);
     }
     private void addFillItems(Inventory inv) {
-        ItemStack fillItem = new ItemStack(GetMaterial.XMaterial.GRAY_STAINED_GLASS_PANE.parseItem().getType());
+        ItemStack fillItem = new ItemStack(XMaterial.GRAY_STAINED_GLASS_PANE.parseItem().getType());
         ItemMeta fillItemMeta = fillItem.getItemMeta();
         fillItemMeta.setDisplayName(" ");
         fillItem.setItemMeta(fillItemMeta);

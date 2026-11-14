@@ -50,13 +50,21 @@
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <minimizeJar>true</minimizeJar>
                             <relocations>
-                                <!-- Newer servers no longer ship commons-lang 2, so bundle our own copy -->
+                                <!-- XSeries asks users to relocate so we never clash with another plugin's copy -->
                                 <relocation>
-                                    <pattern>org.apache.commons.lang.</pattern>
-                                    <shadedPattern>dev.aidanbooth.superreport.libs.commons.lang.</shadedPattern>
+                                    <pattern>com.cryptomorin.xseries.</pattern>
+                                    <shadedPattern>dev.aidanbooth.superreport.libs.xseries.</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>
+                                <!-- From XSeries we only want XMaterial and the one base class it depends on -->
+                                <filter>
+                                    <artifact>com.github.cryptomorin:XSeries</artifact>
+                                    <includes>
+                                        <include>com/cryptomorin/xseries/XMaterial*.class</include>
+                                        <include>com/cryptomorin/xseries/base/XBase*.class</include>
+                                    </includes>
+                                </filter>
                                 <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
@@ -64,6 +72,7 @@
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
                                         <exclude>META-INF/MANIFEST.MF</exclude>
+                                        <exclude>META-INF/maven/**</exclude>
                                         <exclude>META-INF/versions/**</exclude>
                                         <exclude>module-info.class</exclude>
                                     </excludes>
@@ -144,21 +153,6 @@
             </exclusions>
         </dependency>
 
-        <!-- Used by GetMaterial; shaded + relocated because modern servers dropped it -->
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
-        </dependency>
-
-        <!-- @Nonnull / @Nullable annotations, compile time only -->
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>3.0.2</version>
-            <scope>provided</scope>
-        </dependency>
-
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
@@ -173,7 +167,19 @@
                     <groupId>org.jetbrains</groupId>
                     <artifactId>annotations</artifactId>
                 </exclusion>
+                <!-- Voice audio codec + ~3 MB of native libraries; the bot only sends messages -->
+                <exclusion>
+                    <groupId>club.minnced</groupId>
+                    <artifactId>opus-java</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+
+        <!-- Cross-version materials. Only XMaterial is shaded in (see the shade filter) -->
+        <dependency>
+            <groupId>com.github.cryptomorin</groupId>
+            <artifactId>XSeries</artifactId>
+            <version>14.0.0</version>
         </dependency>
     </dependencies>
 </project>

@@ -1,10 +1,10 @@
 package dev.aidanbooth.superreport.commands.reports;
 
+import com.cryptomorin.xseries.XMaterial;
 import dev.aidanbooth.superreport.commands.reports.controlpanel.ControlPanelItems;
 import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.utils.GetInventoryName;
-import dev.aidanbooth.superreport.utils.GetMaterial;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -36,7 +36,7 @@ public class GetClickedReport implements Listener {
     public void onInvClick(InventoryClickEvent e) throws SQLException {
         if(GetInventoryName.getName(e).equals(ChatColor.GOLD + "Reports")) {
             if(e.getCurrentItem() != null) {
-                if(e.getCurrentItem().getType() == GetMaterial.XMaterial.NETHER_STAR.parseMaterial()) {
+                if(e.getCurrentItem().getType() == XMaterial.NETHER_STAR.parseMaterial()) {
                     if(e.getCurrentItem().hasItemMeta() && e.getCurrentItem().getItemMeta().hasLore()) {
                         UUID uuid = UUID.fromString(ChatColor.stripColor(e.getCurrentItem().getItemMeta().getLore().get(5)));
                         values.addChosenReport((Player) e.getWhoClicked(), uuid);

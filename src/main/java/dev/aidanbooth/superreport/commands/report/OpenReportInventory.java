@@ -1,9 +1,9 @@
 package dev.aidanbooth.superreport.commands.report;
 
+import com.cryptomorin.xseries.XMaterial;
 import dev.aidanbooth.superreport.configs.ReportMenuConfig;
 import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.Main;
-import dev.aidanbooth.superreport.utils.GetMaterial;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -26,7 +26,7 @@ public class OpenReportInventory {
         Inventory inv = Bukkit.createInventory(null, size, ChatColor.GOLD + "Report " + reported.getName()); //Creates inventory
 
         String fillItemMaterial = rmc.getPunishmentsCfg().getString("ReportMenu.Items.Fill.Material"); //Get material from config
-        ItemStack fillItem = GetMaterial.XMaterial.matchXMaterial(fillItemMaterial).get().parseItem(); //Set material
+        ItemStack fillItem = XMaterial.matchXMaterial(fillItemMaterial).get().parseItem(); //Set material
         ItemMeta fillItemMeta = fillItem.getItemMeta(); //Get fill meta
         String fillItemName = ChatColor.translateAlternateColorCodes('&', rmc.getPunishmentsCfg().getString("ReportMenu.Items.Fill.Name")); //Get fill name
         fillItemMeta.setDisplayName(fillItemName); //Sets name
@@ -46,7 +46,7 @@ public class OpenReportInventory {
         for (String key : rmc.getPunishmentsCfg().getConfigurationSection("ReportMenu.Items.Slot").getKeys(false)) { //For each item
             String material = rmc.getPunishmentsCfg().getString("ReportMenu.Items.Slot." + key + ".Material").toUpperCase(); //Gets material from config
             Material material1 = Material.getMaterial(material); //Converts to material
-            ItemStack mat = new ItemStack(GetMaterial.XMaterial.matchXMaterial(material1).parseItem()); //Gets xmaaterial from string material
+            ItemStack mat = new ItemStack(XMaterial.matchXMaterial(material1).parseItem()); //Gets xmaaterial from string material
             int slot = Integer.parseInt(key); //Get slot
             String name = rmc.getPunishmentsCfg().getString("ReportMenu.Items.Slot." + key + ".Name"); //get item name
             List<String> lore = rmc.getPunishmentsCfg().getStringList("ReportMenu.Items.Slot." + key + ".Lore"); //Get item lore
