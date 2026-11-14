@@ -1,59 +1,62 @@
 package dev.aidanbooth.superreport.punishmenthandler;
 
-import dev.aidanbooth.superreport.GetValues;
+import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.configs.MessagesConfig;
+import dev.aidanbooth.superreport.database.model.Punishment;
+import dev.aidanbooth.superreport.database.model.PunishmentType;
 import dev.aidanbooth.superreport.utils.GetDuration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class KickPlayer {
-    private GetValues values = new GetValues();
-    private MessagesConfig mc = new MessagesConfig();
+    private final Main plugin = Main.getPlugin(Main.class);
+    private final MessagesConfig mc = new MessagesConfig();
 
     public void kick(Player player) {
+        Optional<Punishment> ban;
         try {
-            PreparedStatement statement = values.getConnection().prepareStatement("SELECT `REASON`, `DATE_TIME_LIFTED`,`PUNISHER_UUID` FROM "
-                    + values.tablePunishmentBan + " WHERE `UUID` = ?");
-            statement.setString(1, player.getUniqueId().toString());
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                if(player.hasPermission("superreport.bypass.ban")) {
-                    player.sendMessage(ChatColor.RED + "It seems you have been banned but can bypass!");
-                    return;
-                }
-                String reason = rs.getString(1);
-                //Timestamp dateTimeLifed = rs.getTimestamp(2);
-                Timestamp dateTimeLifted = Timestamp.valueOf(rs.getString(2));
-
-                String stringBannerUuid = rs.getString(3);
-                UUID bannerUuid = UUID.fromString(stringBannerUuid);
-                OfflinePlayer banner = Bukkit.getOfflinePlayer(bannerUuid);
-
-                if (rs.getString(2).equals("2000-01-01 00:00:00")) {
-                    List<String> listMessage = mc.getPunishmentsCfg().getStringList("PermanentBanMessage");
-                    String message = listMessage.stream().map(n -> String.valueOf(n)).collect(Collectors.joining("\n"));
-                    player.kickPlayer(ChatColor.translateAlternateColorCodes('&', message).replace("{reason}", reason).replace("{banner}", banner.getName()));
-                } else {
-                    if (dateTimeLifted.after(new Timestamp(System.currentTimeMillis()))) {
-                        List<String> listMessage = mc.getPunishmentsCfg().getStringList("TemporaryBanMessage");
-                        String message = listMessage.stream().map(n -> String.valueOf(n)).collect(Collectors.joining("\n"));
-                        player.kickPlayer(ChatColor.translateAlternateColorCodes('&', message).replace("{reason}", reason).replace("{time}", GetDuration.getDuration(new Date(System.currentTimeMillis()), dateTimeLifted)).replace("{banner}", banner.getName()));
-                    }
-                }
-            }
+            ban = plugin.getPunishments().find(PunishmentType.BAN, player.getUniqueId());
         } catch (SQLException e) {
             e.printStackTrace();
+            return;
         }
+        if (!ban.isPresent() || ban.get().isExpired()) {
+            return;
+        }
+        if (player.hasPermission("superreport.bypass.ban")) {
+            player.sendMessage(ChatColor.RED + "It seems you have been banned but can bypass!");
+            return;
+        }
+        player.kickPlayer(banMessage(ban.get()));
+    }
+
+    public String banMessage(Punishment ban) {
+        String message = joinLines(mc.getPunishmentsCfg().getStringList(
+                ban.isPermanent() ? "PermanentBanMessage" : "TemporaryBanMessage"));
+        message = message.replace("{reason}", ban.reason()).replace("{banner}", nameOf(ban.punisher()));
+        if (!ban.isPermanent()) {
+            message = message.replace("{time}", GetDuration.getDuration(new Date(), ban.expiresAt()));
+        }
+        return message;
+    }
+
+    static String joinLines(List<String> lines) {
+        return ChatColor.translateAlternateColorCodes('&', String.join("\n", lines));
+    }
+
+    static String nameOf(UUID player) {
+        if (player == null) {
+            return "Unknown";
+        }
+        OfflinePlayer offline = Bukkit.getOfflinePlayer(player);
+        return offline.getName() == null ? "Unknown" : offline.getName();
     }
 }

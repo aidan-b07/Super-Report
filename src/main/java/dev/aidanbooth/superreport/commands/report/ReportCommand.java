@@ -4,8 +4,8 @@ import dev.aidanbooth.superreport.configs.MessagesConfig;
 import dev.aidanbooth.superreport.DiscordBot;
 import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.Main;
+import dev.aidanbooth.superreport.database.model.PlayerData;
 import dev.aidanbooth.superreport.utils.ErrorCodes;
-import dev.aidanbooth.superreport.utils.GenerateUUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -14,8 +14,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class ReportCommand implements CommandExecutor {
@@ -32,7 +30,7 @@ public class ReportCommand implements CommandExecutor {
                 Player player = (Player) sender; //Makes sender a player object
                 if (args.length > 0) { //Checks if player name has been inputted
                     OfflinePlayer reportedPlayer = Bukkit.getPlayer(args[0]); //Creates player object for reported player
-                    if (reportExists(player, reportedPlayer)) {
+                    if (!alreadyReported(player, reportedPlayer)) {
                         if (!(args.length > 1)) { //If reason has been set
                             if (!player.getName().equals(reportedPlayer.getName())) { //Checks if the player isn't reporting themself
                                 if (isOnline(reportedPlayer, player)) { //Checks if reported player is online
@@ -49,53 +47,14 @@ public class ReportCommand implements CommandExecutor {
                         } else {
                             String reason = ChatColor.stripColor(args[1]).replace("~", " ");
 
-                            java.util.Date dt = new java.util.Date(); //Gets the date
-                            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //Formats the date
-                            String currentTime = sdf.format(dt); //Runs the formatting
-
-                            try { //Add report to active reports
-                                String uuid = GenerateUUID.getNewUuid();
-                                PreparedStatement addReport = GetValues.getConnection().prepareStatement("INSERT INTO " + GetValues.getTableReportsActive() +
-                                        " (UUID,REPORTER_UUID,REPORTED_UUID,DATE_TIME_REPORTED,REASON) VALUES (?,?,?,?,?)");
-                                addReport.setString(1, uuid);
-                                addReport.setString(2, player.getUniqueId().toString());
-                                addReport.setString(3, reportedPlayer.getUniqueId().toString());
-                                addReport.setString(4, currentTime);
-                                addReport.setString(5, reason);
-
-                                addReport.executeUpdate(); //Executes update duh
-
-                                addReport.close();
+                            try {
+                                plugin.getReports().create(player.getUniqueId(), reportedPlayer.getUniqueId(), reason);
+                                plugin.getPlayerData().incrementReports(player.getUniqueId());
+                                plugin.getPlayerData().incrementReported(reportedPlayer.getUniqueId());
                             } catch (SQLException o) {
-                                ErrorCodes.getTemplate("001");
-                                o.printStackTrace();
+                                logError("001", o);
                                 reportError(player);
-                            }
-
-                            try { //Add report to reporter's player data
-                                PreparedStatement addReport = GetValues.getConnection().prepareStatement("UPDATE " + values.getTablePlayerData() +
-                                        " SET REPORTS = REPORTS + 1 WHERE UUID = ?"); //Adds report to player data
-                                addReport.setString(1, player.getUniqueId().toString());
-                                addReport.executeUpdate();
-
-                                addReport.close();
-                            } catch (SQLException o) {
-                                ErrorCodes.getTemplate("002");
-                                o.printStackTrace();
-                                reportError(player);
-                            }
-
-                            try { //Add reported to reported player's player data
-                                PreparedStatement addReport = GetValues.getConnection().prepareStatement("UPDATE " + values.getTablePlayerData() +
-                                        " SET REPORTED = REPORTED + 1 WHERE UUID = ?"); //Adds report to player data
-                                addReport.setString(1, reportedPlayer.getUniqueId().toString());
-                                addReport.executeUpdate();
-
-                                addReport.close();
-                            } catch (SQLException o) {
-                                ErrorCodes.getTemplate("003");
-                                o.printStackTrace();
-                                reportError(player);
+                                return true;
                             }
 
                             db.sendEmbed(player, reportedPlayer, reason);
@@ -116,40 +75,29 @@ public class ReportCommand implements CommandExecutor {
         }
         return false;
     }
-    private boolean reportExists(Player reporter, OfflinePlayer reported) {
+    private boolean alreadyReported(Player reporter, OfflinePlayer reported) {
         try {
-            PreparedStatement reportExists = GetValues.getConnection().prepareStatement("SELECT * FROM " + GetValues.getTableReportsActive()
-                    + " WHERE REPORTER_UUID = ? AND REPORTED_UUID = ?");
-            reportExists.setString(1, reporter.getUniqueId().toString());
-            reportExists.setString(2, reported.getUniqueId().toString());
-            ResultSet set = reportExists.executeQuery();
-            if(set.next()) {
-                return false;
-            }
+            return plugin.getReports().exists(reporter.getUniqueId(), reported.getUniqueId());
         } catch (SQLException o) {
-            ErrorCodes.getTemplate("004");
-            o.printStackTrace();
+            logError("004", o);
             reportError(reporter);
+            return false;
         }
-        return true;
     }
     private boolean isOnline(OfflinePlayer reportedPlayer, Player player) {
         try {
-            PreparedStatement statement = values.getConnection().prepareStatement("SELECT * FROM " + values.getTablePlayerData()
-                    + " WHERE UUID = ?"); //Selects reported players SQL profile row
-            statement.setString(1, reportedPlayer.getUniqueId().toString());
-            ResultSet resultSet = statement.executeQuery(); //Gets information from this row#
-            if (resultSet.next()) {
-                if (resultSet.getBoolean(4)) { //Checks if reported player is online
-                    return true;
-                }
-            }
+            return plugin.getPlayerData().find(reportedPlayer.getUniqueId())
+                    .map(PlayerData::online)
+                    .orElse(false);
         } catch (SQLException e) {
-            ErrorCodes.getTemplate("005");
-            e.printStackTrace();
+            logError("005", e);
             reportError(player);
+            return false;
         }
-        return false;
+    }
+    private void logError(String code, SQLException e) {
+        plugin.getServer().getConsoleSender().sendMessage(ErrorCodes.getTemplate(code));
+        e.printStackTrace();
     }
     private void reportError(Player player) {
         player.sendMessage(values.getReportError());

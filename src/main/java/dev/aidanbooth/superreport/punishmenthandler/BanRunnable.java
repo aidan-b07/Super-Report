@@ -1,55 +1,48 @@
 package dev.aidanbooth.superreport.punishmenthandler;
 
-import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.Main;
-import dev.aidanbooth.superreport.utils.GetDuration;
-import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
+import dev.aidanbooth.superreport.database.model.Punishment;
+import dev.aidanbooth.superreport.database.model.PunishmentType;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
 
 public class BanRunnable {
+    private static final long INTERVAL_TICKS = 200;
+
     private final Main plugin = Main.getPlugin(Main.class);
-    private GetValues values = new GetValues();
+    private final KickPlayer kickPlayer = new KickPlayer();
 
     public void startBanRunnable() {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                try {
-                    PreparedStatement statement = values.getConnection().prepareStatement("SELECT `UUID`,`REASON`,`DATE_TIME_LIFTED` FROM " + values.getTablePunishmentBan() + " WHERE `NEW` = 1 AND `PUNISHMENT` = 'ban'");
-                    statement.executeQuery();
-                    ResultSet set = statement.getResultSet();
-                    while(set.next()) {
-                        OfflinePlayer player = plugin.getServer().getPlayer(UUID.fromString(set.getString(1)));
-                        if(player instanceof Player) {
-                            ((Player) player).kickPlayer(ChatColor.translateAlternateColorCodes('&', set.getString(2).replace("{time}", GetDuration.getDuration(new Date(System.currentTimeMillis()), set.getTimestamp(3)))));
-                        }
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    try {
-                                        PreparedStatement statement1 = values.getConnection().prepareStatement("UPDATE " + values.getTablePunishmentBan() + " SET `NEW` = 0 WHERE UUID = ?");
-                                        statement1.setString(1, player.getUniqueId().toString());
-                                        statement1.executeUpdate();
-                                    }catch (NullPointerException o) {
-                                    }
-                                } catch (SQLException throwables) {
-                                    throwables.printStackTrace();
-                                }
-                            }
-                        }.runTaskLater(plugin, 200);
-                    }
-                } catch (SQLException o) {
+        plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, this::checkNewBans, INTERVAL_TICKS, INTERVAL_TICKS);
+    }
+
+    private void checkNewBans() {
+        List<Punishment> newBans;
+        try {
+            newBans = plugin.getPunishments().findNew(PunishmentType.BAN);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return;
+        }
+        for (Punishment ban : newBans) {
+            UUID uuid = ban.player();
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                Player player = plugin.getServer().getPlayer(uuid);
+                if (player != null) {
+                    kickPlayer.kick(player);
                 }
-            }
-        }.runTaskTimer(plugin, 200, 200);
+            });
+            // Leave the flag set for one more cycle so other servers sharing the database see it too
+            plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
+                try {
+                    plugin.getPunishments().markSeen(PunishmentType.BAN, uuid);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }, INTERVAL_TICKS);
+        }
     }
 }

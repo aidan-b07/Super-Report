@@ -1,84 +1,54 @@
 package dev.aidanbooth.superreport.punishmenthandler;
 
-import dev.aidanbooth.superreport.configs.MessagesConfig;
-import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.Main;
+import dev.aidanbooth.superreport.configs.MessagesConfig;
+import dev.aidanbooth.superreport.database.model.Punishment;
+import dev.aidanbooth.superreport.database.model.PunishmentType;
 import dev.aidanbooth.superreport.utils.GetDuration;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.ParseException;
 import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 public class MuteOnTalk implements Listener {
     private final Main plugin = Main.getPlugin(Main.class);
-    private final GetValues values = new GetValues();
-    private MessagesConfig mc = new MessagesConfig();
+    private final MessagesConfig mc = new MessagesConfig();
 
     @EventHandler
-    private void onChat(AsyncPlayerChatEvent e) throws ParseException {
+    private void onChat(AsyncPlayerChatEvent e) {
         Player player = e.getPlayer();
         try {
-            PreparedStatement statement = values.getConnection().prepareStatement("SELECT `REASON`, `DATE_TIME_LIFTED`,`PUNISHER_UUID` FROM "
-                    + values.getTablePunishmentMute() + " WHERE `UUID` = ?");
-            statement.setString(1, player.getUniqueId().toString());
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                if(player.hasPermission("superreport.bypass.mute")) {
-                    player.sendMessage(ChatColor.RED + "It seems you have been muted but can bypass!");
-                    return;
-                }
-                String reason = rs.getString(1);
-                Timestamp dateTimeLifted = Timestamp.valueOf(rs.getString(2));
-
-                String stringBannerUuid = rs.getString(3);
-                UUID bannerUuid = UUID.fromString(stringBannerUuid);
-                OfflinePlayer banner = Bukkit.getOfflinePlayer(bannerUuid);
-
-                if (rs.getString(2).equals("2000-01-01 00:00:00")) {
-                    List<String> listMessage = mc.getPunishmentsCfg().getStringList("PermanentMuteMessage");
-                    String message = listMessage.stream().map(n -> String.valueOf(n)).collect(Collectors.joining("\n"));
-                    e.setCancelled(true);
-                    player.sendMessage(ChatColor.translateAlternateColorCodes('&', message).replace("{reason}", reason).replace("{muter}", banner.getName()));
-                } else {
-                    if (dateTimeLifted.after(new Timestamp(System.currentTimeMillis()))) {
-                        List<String> listMessage = mc.getPunishmentsCfg().getStringList("TemporaryMuteMessage");
-                        String message = listMessage.stream().map(n -> String.valueOf(n)).collect(Collectors.joining("\n"));
-                        e.setCancelled(true);
-                        player.sendMessage(ChatColor.translateAlternateColorCodes('&', message).replace("{reason}", reason).replace("{time}", GetDuration.getDuration(new Date(System.currentTimeMillis()), dateTimeLifted)).replace("{muter}", banner.getName()));
-                    } else {
-                        PreparedStatement archivePunishment = values.getConnection().prepareStatement("INSERT INTO " + values.getTablePunishmentArchived() + " (`UUID`,`TYPE`,`DATE_ARCHIVED`,`REASON`,`PUNISHER_UUID`) VALUES (?,'mute'," + getDateTime() + ",?,?)");
-                        archivePunishment.setString(1, player.getUniqueId().toString());
-                        archivePunishment.setString(2, reason);
-                        archivePunishment.setString(3, banner.getUniqueId().toString());
-                        archivePunishment.executeUpdate();
-                        PreparedStatement deletePunishment = values.getConnection().prepareStatement("DELETE FROM " + values.getTablePunishmentMute() + " WHERE `UUID` = ?");
-                        deletePunishment.setString(1, player.getUniqueId().toString());
-                        deletePunishment.executeUpdate();
-                    }
-                }
+            Optional<Punishment> mute = plugin.getPunishments().find(PunishmentType.MUTE, player.getUniqueId());
+            if (!mute.isPresent()) {
+                return;
             }
+            if (player.hasPermission("superreport.bypass.mute")) {
+                player.sendMessage(ChatColor.RED + "It seems you have been muted but can bypass!");
+                return;
+            }
+            if (mute.get().isExpired()) {
+                plugin.getPunishments().archive(PunishmentType.MUTE, player.getUniqueId());
+                return;
+            }
+            e.setCancelled(true);
+            player.sendMessage(muteMessage(mute.get()));
         } catch (SQLException o) {
             o.printStackTrace();
         }
     }
-    private String getDateTime() {
-        if(values.sqlEnabled) {
-            return "DATE_ADD(NOW())";
-        } else {
-            return "DATETIME('now')";
+
+    private String muteMessage(Punishment mute) {
+        String message = KickPlayer.joinLines(mc.getPunishmentsCfg().getStringList(
+                mute.isPermanent() ? "PermanentMuteMessage" : "TemporaryMuteMessage"));
+        message = message.replace("{reason}", mute.reason()).replace("{muter}", KickPlayer.nameOf(mute.punisher()));
+        if (!mute.isPermanent()) {
+            message = message.replace("{time}", GetDuration.getDuration(new Date(), mute.expiresAt()));
         }
+        return message;
     }
 }

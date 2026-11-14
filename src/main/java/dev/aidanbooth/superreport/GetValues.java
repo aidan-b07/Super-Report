@@ -2,69 +2,9 @@ package dev.aidanbooth.superreport;
 
 import org.bukkit.entity.Player;
 
-import java.sql.Connection;
 import java.util.*;
 
 public class GetValues {
-    //SQL connection
-    public static Connection connection;
-    public static Connection getConnection() {return connection;}
-    public static void setConnection(Connection newConnection) {connection = newConnection;}
-
-    //BOOLEAN sqlEnabled
-    public static Boolean sqlEnabled;
-    public static Boolean getSqlEnabled() {return sqlEnabled;}
-    public static void setSqlEnabled(Boolean newSqlEnabled) {sqlEnabled = newSqlEnabled;}
-
-    //STRING host
-    public static String host;
-    public static String getHost() {return host;}
-    public static void setHost(String newHost) {host = newHost;}
-
-    //INT port
-    public static int port;
-    public static int getPort() {return port;}
-    public static void setPort(int newPort) {port = newPort;}
-
-    //STRING database
-    public static String database;
-    public static String getDatabase() {return database;}
-    public static void setDatabase(String newDatabase) {database = newDatabase;}
-
-    //STRING username
-    public static String username;
-    public static String getUsername() {return username;}
-    public static void setUsername(String newUsername) {username = newUsername;}
-
-    //STRING password
-    public static String password;
-    public static String getPassword() {return password;}
-    public static void setPassword(String newPassword) {password = newPassword;}
-
-    //TABLE 'superreport_playerdata'
-    public static String tablePlayerData = "superreport_playerdata";
-    public static String getTablePlayerData() {return tablePlayerData;}
-
-    //TABLE 'superreport_reports_inactive'
-    public static String tableReportsInactive = "superreport_reports_inactive";
-    public static String getTableReportsInactive() {return tableReportsInactive;}
-
-    //TABLE 'superreport_reports_active'
-    public static String tableReportsActive = "superreport_reports_active";
-    public static String getTableReportsActive() {return tableReportsActive;}
-
-    //TABLE 'superreport_punishment_ban'
-    public static String tablePunishmentBan = "superreport_punishment_ban";
-    public static String getTablePunishmentBan() {return tablePunishmentBan;}
-
-    //TABLE 'superreport_punishment_mute'
-    public static String tablePunishmentMute = "superreport_punishment_mute";
-    public static String getTablePunishmentMute() {return tablePunishmentMute;}
-
-    //TABLE 'superreport_punishment_achieved'
-    public static String tablePunishmentArchived = "superreport_punishment_archived";
-    public static String getTablePunishmentArchived() {return tablePunishmentArchived;}
-
     //MESSAGE 'ReportCommand.Usage'
     public static String reportCommandUsage;
     public static String getReportCommandUsage() {return reportCommandUsage;}

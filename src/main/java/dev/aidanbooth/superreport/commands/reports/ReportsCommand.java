@@ -3,6 +3,7 @@ package dev.aidanbooth.superreport.commands.reports;
 import com.cryptomorin.xseries.XMaterial;
 import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.Main;
+import dev.aidanbooth.superreport.database.model.Report;
 import dev.aidanbooth.superreport.utils.ErrorCodes;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -15,9 +16,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -32,19 +31,12 @@ public class ReportsCommand implements CommandExecutor {
                 Player player = (Player) sender;
                 Inventory reportsInv = Bukkit.createInventory(null, 54, ChatColor.GOLD + "Reports"); //Creates reports inventory
                 try {
-                    Statement statement = values.getConnection().createStatement(); //Creates a statement
-                    ResultSet set = statement.executeQuery("SELECT * FROM " + values.getTableReportsActive());
-                    while (set.next()) { //It's like an iterator, but this is Iterator#hasNext() and Iterator#next() in one
-                        String reportUuid = set.getString(1);
-                        String reporterUuid = set.getString(2);
-                        String reportedUuid = set.getString(3);
-                        String dateTimeReported = set.getString(4);
-                        String reason = set.getString(5);
-
-                        addReportsItems(reportsInv, reportUuid, reporterUuid, reportedUuid, dateTimeReported, reason);
+                    for (Report report : plugin.getReports().findAll()) {
+                        addReportsItems(reportsInv, report.id().toString(), report.reporter().toString(),
+                                report.reported().toString(), report.reportedAt(), report.reason());
                     }
                 } catch (SQLException o) {
-                    ErrorCodes.getTemplate("008");
+                    plugin.getServer().getConsoleSender().sendMessage(ErrorCodes.getTemplate("008"));
                     o.printStackTrace();
                 }
                 player.openInventory(reportsInv);

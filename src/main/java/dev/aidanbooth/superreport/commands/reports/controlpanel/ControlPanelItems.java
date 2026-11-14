@@ -1,41 +1,34 @@
 package dev.aidanbooth.superreport.commands.reports.controlpanel;
 
 import com.cryptomorin.xseries.XMaterial;
-import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.Main;
+import dev.aidanbooth.superreport.database.model.PlayerData;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public class ControlPanelItems {
     private Main plugin = Main.getPlugin(Main.class);
-    private GetValues values = new GetValues();
 
     public void addControlPanelItems(Inventory inv, ItemStack item) throws SQLException {
         String reporterUuid = ChatColor.stripColor(item.getItemMeta().getLore().get(2)).replace("Reporter UUID - ", "");
         String reportedUuid = ChatColor.stripColor(item.getItemMeta().getLore().get(0)).replace("Reported UUID - ", "");
 
-        PreparedStatement reported = values.getConnection().prepareStatement("SELECT * FROM " + values.getTablePlayerData() +
-                " WHERE `UUID` = ?");
-        reported.setString(1, reportedUuid);
-        ResultSet reportedResult = reported.executeQuery();
-        if(reportedResult.next()) {
-            addReportedProfile(inv, item, reportedResult, true);
+        Optional<PlayerData> reported = plugin.getPlayerData().find(UUID.fromString(reportedUuid));
+        if (reported.isPresent()) {
+            addReportedProfile(inv, item, reported.get(), true);
         }
 
-        PreparedStatement reporter = values.getConnection().prepareStatement("SELECT * FROM " + values.getTablePlayerData() +
-                " WHERE `UUID` = ?");
-        reporter.setString(1, reporterUuid);
-        ResultSet reporterResult = reporter.executeQuery();
-        if(reporterResult.next()) {
-            addReportedProfile(inv, item, reporterResult, false);
+        Optional<PlayerData> reporter = plugin.getPlayerData().find(UUID.fromString(reporterUuid));
+        if (reporter.isPresent()) {
+            addReportedProfile(inv, item, reporter.get(), false);
         }
 
         addDismissItem(inv);
@@ -44,7 +37,7 @@ public class ControlPanelItems {
 
         addItems(inv);
     } //Controls all the items
-    public void addReportedProfile(Inventory inv, ItemStack item, ResultSet result, Boolean red) throws SQLException {
+    public void addReportedProfile(Inventory inv, ItemStack item, PlayerData data, Boolean red) {
         ItemStack reported;
         if(red) {
             reported = XMaterial.RED_WOOL.parseItem(); //Creates item
@@ -64,11 +57,11 @@ public class ControlPanelItems {
         reportedMeta.setDisplayName(ChatColor.GOLD + item.getItemMeta().getDisplayName().replace("Name - ", ChatColor.GOLD + "Reported - "));
         reportedMeta.setLore(Arrays.asList(
                 reportedLore.get(0),
-                ChatColor.GOLD + "Reports - " + ChatColor.GRAY + result.getInt("REPORTS"),
-                ChatColor.GOLD + "Reported - " + ChatColor.GRAY + result.getInt("REPORTED"),
-                ChatColor.GOLD + "Online - " + ChatColor.GRAY + result.getBoolean("ONLINE"),
-                ChatColor.GOLD + "Bans - " + ChatColor.GRAY + result.getInt("BANS"),
-                ChatColor.GOLD + "Mutes - " + ChatColor.GRAY + result.getInt("MUTES")));
+                ChatColor.GOLD + "Reports - " + ChatColor.GRAY + data.reports(),
+                ChatColor.GOLD + "Reported - " + ChatColor.GRAY + data.reported(),
+                ChatColor.GOLD + "Online - " + ChatColor.GRAY + data.online(),
+                ChatColor.GOLD + "Bans - " + ChatColor.GRAY + data.bans(),
+                ChatColor.GOLD + "Mutes - " + ChatColor.GRAY + data.mutes()));
         reported.setItemMeta(reportedMeta);
         if(red) {
             inv.setItem(10, reported);

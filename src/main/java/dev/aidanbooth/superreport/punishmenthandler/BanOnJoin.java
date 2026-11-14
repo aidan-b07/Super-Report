@@ -1,82 +1,40 @@
 package dev.aidanbooth.superreport.punishmenthandler;
 
-import dev.aidanbooth.superreport.configs.MessagesConfig;
-import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.Main;
-import dev.aidanbooth.superreport.utils.GetDuration;
-import org.bukkit.Bukkit;
+import dev.aidanbooth.superreport.database.model.Punishment;
+import dev.aidanbooth.superreport.database.model.PunishmentType;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 public class BanOnJoin implements Listener {
     private final Main plugin = Main.getPlugin(Main.class);
-    private GetValues values = new GetValues();
-    private MessagesConfig mc = new MessagesConfig();
+    private final KickPlayer kickPlayer = new KickPlayer();
 
     @EventHandler
     public void onJoin(PlayerLoginEvent e) {
         Player player = e.getPlayer();
         try {
-            PreparedStatement statement = values.getConnection().prepareStatement("SELECT `REASON`, `DATE_TIME_LIFTED`,`PUNISHER_UUID` FROM "
-                    + values.tablePunishmentBan + " WHERE `UUID` = ?");
-            statement.setString(1, player.getUniqueId().toString());
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                if(player.hasPermission("superreport.bypass.ban")) {
-                    player.sendMessage(ChatColor.RED + "It seems you have been banned but can bypass!");
-                    return;
-                }
-                String reason = rs.getString(1);
-                //Timestamp dateTimeLifed = rs.getTimestamp(2);
-                Timestamp dateTimeLifted = Timestamp.valueOf(rs.getString(2));
-
-                String stringBannerUuid = rs.getString(3);
-                UUID bannerUuid = UUID.fromString(stringBannerUuid);
-                OfflinePlayer banner = Bukkit.getOfflinePlayer(bannerUuid);
-
-                if (rs.getString(2).equals("2000-01-01 00:00:00")) {
-                    List<String> listMessage = mc.getPunishmentsCfg().getStringList("PermanentBanMessage");
-                    String message = listMessage.stream().map(n -> String.valueOf(n)).collect(Collectors.joining("\n"));
-                    e.disallow(PlayerLoginEvent.Result.KICK_OTHER, ChatColor.translateAlternateColorCodes('&', message).replace("{reason}", reason).replace("{banner}", banner.getName()));
-                } else {
-                    if (dateTimeLifted.after(new Timestamp(System.currentTimeMillis()))) {
-                        List<String> listMessage = mc.getPunishmentsCfg().getStringList("TemporaryBanMessage");
-                        String message = listMessage.stream().map(n -> String.valueOf(n)).collect(Collectors.joining("\n"));
-                        e.disallow(PlayerLoginEvent.Result.KICK_OTHER, ChatColor.translateAlternateColorCodes('&', message).replace("{reason}", reason).replace("{time}", GetDuration.getDuration(new Date(System.currentTimeMillis()), dateTimeLifted)).replace("{banner}", banner.getName()));
-                    } else {
-                        PreparedStatement archivePunishment = values.getConnection().prepareStatement("INSERT INTO " + values.getTablePunishmentArchived() + " (`UUID`,`TYPE`,`DATE_ARCHIVED`,`REASON`,`PUNISHER_UUID`) VALUES (?,'ban'," + getDateTime() + ",?,?)");
-                        archivePunishment.setString(1, player.getUniqueId().toString());
-                        archivePunishment.setString(2, reason);
-                        archivePunishment.setString(3, banner.getUniqueId().toString());
-                        archivePunishment.executeUpdate();
-                        PreparedStatement deletePunishment = values.getConnection().prepareStatement("DELETE FROM " + values.getTablePunishmentBan() + " WHERE `UUID` = ?");
-                        deletePunishment.setString(1, player.getUniqueId().toString());
-                        deletePunishment.executeUpdate();
-                    }
-                }
+            Optional<Punishment> ban = plugin.getPunishments().find(PunishmentType.BAN, player.getUniqueId());
+            if (!ban.isPresent()) {
+                return;
             }
+            if (player.hasPermission("superreport.bypass.ban")) {
+                player.sendMessage(ChatColor.RED + "It seems you have been banned but can bypass!");
+                return;
+            }
+            if (ban.get().isExpired()) {
+                plugin.getPunishments().archive(PunishmentType.BAN, player.getUniqueId());
+                return;
+            }
+            e.disallow(PlayerLoginEvent.Result.KICK_OTHER, kickPlayer.banMessage(ban.get()));
         } catch (SQLException o) {
             o.printStackTrace();
-        }
-    }
-    private String getDateTime() {
-        if(values.sqlEnabled) {
-            return "DATE_ADD(NOW())";
-        } else {
-            return "DATETIME('now')";
         }
     }
 }
