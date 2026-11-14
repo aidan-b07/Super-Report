@@ -10,19 +10,19 @@ import java.util.Arrays;
 
 public class PunishmentChoiceItems {
     public static void addPunishmentInvItems(Inventory inv) {
-        ItemStack ban = new ItemStack(XMaterial.BARRIER.parseMaterial());
+        ItemStack ban = XMaterial.BARRIER.parseItem();
         ItemMeta banMeta = ban.getItemMeta();
         banMeta.setDisplayName(ChatColor.RED + "Ban");
         banMeta.setLore(Arrays.asList(ChatColor.GRAY + "Click here to ban this player!"));
         ban.setItemMeta(banMeta);
 
-        ItemStack mute = new ItemStack(XMaterial.WRITABLE_BOOK.parseMaterial());
+        ItemStack mute = XMaterial.WRITABLE_BOOK.parseItem();
         ItemMeta muteMeta = mute.getItemMeta();
         muteMeta.setDisplayName(ChatColor.RED + "Mute");
         muteMeta.setLore(Arrays.asList(ChatColor.GRAY + "Click here to mute this player!"));
         mute.setItemMeta(muteMeta);
 
-        ItemStack fillItem = new ItemStack(XMaterial.GRAY_STAINED_GLASS_PANE.parseItem().getType());
+        ItemStack fillItem = XMaterial.GRAY_STAINED_GLASS_PANE.parseItem();
         ItemMeta fillItemMeta = fillItem.getItemMeta();
         fillItemMeta.setDisplayName(" ");
         fillItem.setItemMeta(fillItemMeta);

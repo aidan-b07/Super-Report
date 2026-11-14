@@ -75,7 +75,7 @@ public class ControlPanelItems {
         }
     } //Reported and reporter profile
     public void addPunishmentItem(Inventory inv) {
-        ItemStack punishment = new ItemStack(XMaterial.DIAMOND_SWORD.parseMaterial());
+        ItemStack punishment = XMaterial.DIAMOND_SWORD.parseItem();
         ItemMeta punishmentMeta = punishment.getItemMeta();
         punishmentMeta.setDisplayName(ChatColor.RED + "Punish");
         punishmentMeta.setLore(Arrays.asList(ChatColor.GRAY + "Click here to view", ChatColor.GRAY + "all punishments!"));
@@ -83,7 +83,7 @@ public class ControlPanelItems {
         inv.setItem(12, punishment);
     } //Add punishment items
     public void addDismissItem(Inventory inv) {
-        ItemStack dismiss = new ItemStack(XMaterial.BARRIER.parseMaterial());
+        ItemStack dismiss = XMaterial.BARRIER.parseItem();
         ItemMeta dismissMeta = dismiss.getItemMeta();
         dismissMeta.setDisplayName(ChatColor.RED + "Dismiss");
         dismissMeta.setLore(Arrays.asList(

@@ -36,7 +36,7 @@ public class GetClickedReport implements Listener {
     public void onInvClick(InventoryClickEvent e) throws SQLException {
         if(GetInventoryName.getName(e).equals(ChatColor.GOLD + "Reports")) {
             if(e.getCurrentItem() != null) {
-                if(e.getCurrentItem().getType() == XMaterial.NETHER_STAR.parseMaterial()) {
+                if(e.getCurrentItem().getType() == XMaterial.NETHER_STAR.get()) {
                     if(e.getCurrentItem().hasItemMeta() && e.getCurrentItem().getItemMeta().hasLore()) {
                         UUID uuid = UUID.fromString(ChatColor.stripColor(e.getCurrentItem().getItemMeta().getLore().get(5)));
                         values.addChosenReport((Player) e.getWhoClicked(), uuid);

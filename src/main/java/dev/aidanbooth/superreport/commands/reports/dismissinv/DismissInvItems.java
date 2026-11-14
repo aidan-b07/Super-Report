@@ -20,7 +20,7 @@ public class DismissInvItems {
         cancel.setItemMeta(cancelMeta);
 
 
-        ItemStack fillItem = new ItemStack(XMaterial.GRAY_STAINED_GLASS_PANE.parseItem().getType());
+        ItemStack fillItem = XMaterial.GRAY_STAINED_GLASS_PANE.parseItem();
         ItemMeta fillItemMeta = fillItem.getItemMeta();
         fillItemMeta.setDisplayName(" ");
         fillItem.setItemMeta(fillItemMeta);

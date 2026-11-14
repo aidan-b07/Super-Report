@@ -120,7 +120,7 @@ public class TimeListener implements Listener {
         }
     }
     private void changeItem(Inventory inv, Player player) {
-        ItemStack item = new ItemStack(XMaterial.NETHER_STAR.parseMaterial());
+        ItemStack item = XMaterial.NETHER_STAR.parseItem();
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + FormatTime.formatTime(time.get(player)));
         if(time.get(player) == -1) {

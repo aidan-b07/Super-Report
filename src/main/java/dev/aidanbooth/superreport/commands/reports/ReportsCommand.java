@@ -1,11 +1,11 @@
 package dev.aidanbooth.superreport.commands.reports;
 
+import com.cryptomorin.xseries.XMaterial;
 import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.utils.ErrorCodes;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -61,7 +61,7 @@ public class ReportsCommand implements CommandExecutor {
             OfflinePlayer reporter = Bukkit.getOfflinePlayer(UUID.fromString(reporterUuid));
             OfflinePlayer reported = Bukkit.getOfflinePlayer(UUID.fromString(reportedUuid));
 
-            ItemStack item = new ItemStack(Material.NETHER_STAR); //Creates the item //TODO: MAKE CUSTOM ITEM
+            ItemStack item = XMaterial.NETHER_STAR.parseItem(); //Creates the item //TODO: MAKE CUSTOM ITEM
             ItemMeta itemMeta = item.getItemMeta(); //Sets meta
             itemMeta.setDisplayName(ChatColor.GOLD + "Reported Name - " + ChatColor.GRAY + reported.getName()); //Sets reported players name
             itemMeta.setLore(Arrays.asList(
