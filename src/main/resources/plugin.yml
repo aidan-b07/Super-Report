@@ -1,7 +1,7 @@
 name: SuperReport
 author: Superbility
-version: 1.5
-main: com.superdevelopment.superreport.Main
+version: ${project.version}
+main: dev.aidanbooth.superreport.Main
 commands:
   report:
     description: Reports players!
