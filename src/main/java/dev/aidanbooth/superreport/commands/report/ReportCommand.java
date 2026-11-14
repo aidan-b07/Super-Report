@@ -88,7 +88,7 @@ public class ReportCommand implements CommandExecutor {
                             try { //Add reported to reported player's player data
                                 PreparedStatement addReport = GetValues.getConnection().prepareStatement("UPDATE " + values.getTablePlayerData() +
                                         " SET REPORTED = REPORTED + 1 WHERE UUID = ?"); //Adds report to player data
-                                addReport.setString(1, player.getUniqueId().toString());
+                                addReport.setString(1, reportedPlayer.getUniqueId().toString());
                                 addReport.executeUpdate();
 
                                 addReport.close();
