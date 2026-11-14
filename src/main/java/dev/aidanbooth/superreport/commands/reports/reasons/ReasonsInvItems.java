@@ -4,9 +4,9 @@ import com.cryptomorin.xseries.XMaterial;
 import dev.aidanbooth.superreport.configs.BanReasonsConfig;
 import dev.aidanbooth.superreport.configs.MuteReasonsConfig;
 import dev.aidanbooth.superreport.GetValues;
+import dev.aidanbooth.superreport.utils.ConfigMaterials;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -25,7 +25,8 @@ public class ReasonsInvItems {
             int size = brc.getBanReasonsCfg().getInt("Size");
             inv = Bukkit.createInventory(null, size, ChatColor.GOLD + "Ban Reason");
             for (String key : brc.getBanReasonsCfg().getConfigurationSection("Items.Slot").getKeys(false)) {
-                Material mat = Material.getMaterial(brc.getBanReasonsCfg().getString("Items.Slot." + key + ".Material").toUpperCase());
+                XMaterial mat = ConfigMaterials.get(brc.getBanReasonsCfg().getString("Items.Slot." + key + ".Material"),
+                        "Ban-Reasons.yml > Items.Slot." + key + ".Material");
                 int slot = Integer.parseInt(key);
                 String name = brc.getBanReasonsCfg().getString("Items.Slot." + key + ".Name");
                 int amount = brc.getBanReasonsCfg().getInt("Items.Slot." + key + ".Amount");
@@ -35,7 +36,8 @@ public class ReasonsInvItems {
             int size = mrc.getMuteReasonsCfg().getInt("Size");
             inv = Bukkit.createInventory(null, size, ChatColor.GOLD + "Mute Reason");
             for (String key : mrc.getMuteReasonsCfg().getConfigurationSection("Items.Slot").getKeys(false)) {
-                Material mat = Material.getMaterial(mrc.getMuteReasonsCfg().getString("Items.Slot." + key + ".Material").toUpperCase());
+                XMaterial mat = ConfigMaterials.get(mrc.getMuteReasonsCfg().getString("Items.Slot." + key + ".Material"),
+                        "Mute-Reasons.yml > Items.Slot." + key + ".Material");
                 int slot = Integer.parseInt(key);
                 String name = mrc.getMuteReasonsCfg().getString("Items.Slot." + key + ".Name");
                 int amount = mrc.getMuteReasonsCfg().getInt("Items.Slot." + key + ".Amount");
@@ -45,8 +47,8 @@ public class ReasonsInvItems {
         addFillItems(inv);
         player.openInventory(inv);
     }
-    public void addItem(Material mat, Inventory inv, int slot, String name, int amount) {
-        ItemStack item = new ItemStack(XMaterial.valueOf(mat.toString()).parseItem());
+    public void addItem(XMaterial mat, Inventory inv, int slot, String name, int amount) {
+        ItemStack item = mat.parseItem();
         ItemMeta meta = item.getItemMeta();
         item.setAmount(amount);
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
@@ -54,7 +56,7 @@ public class ReasonsInvItems {
         inv.setItem(slot, item);
     }
     private void addFillItems(Inventory inv) {
-        ItemStack fillItem = new ItemStack(XMaterial.GRAY_STAINED_GLASS_PANE.parseItem().getType());
+        ItemStack fillItem = XMaterial.GRAY_STAINED_GLASS_PANE.parseItem();
         ItemMeta fillItemMeta = fillItem.getItemMeta();
         fillItemMeta.setDisplayName(" ");
         fillItem.setItemMeta(fillItemMeta);
