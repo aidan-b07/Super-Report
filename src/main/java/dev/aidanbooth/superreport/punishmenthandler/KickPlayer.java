@@ -23,7 +23,8 @@ public class KickPlayer {
     public void kick(Player player) {
         try {
             PreparedStatement statement = values.getConnection().prepareStatement("SELECT `REASON`, `DATE_TIME_LIFTED`,`PUNISHER_UUID` FROM "
-                    + values.tablePunishmentBan + " WHERE `UUID` = '" + player.getUniqueId() + "'");
+                    + values.tablePunishmentBan + " WHERE `UUID` = ?");
+            statement.setString(1, player.getUniqueId().toString());
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 if(player.hasPermission("superreport.bypass.ban")) {

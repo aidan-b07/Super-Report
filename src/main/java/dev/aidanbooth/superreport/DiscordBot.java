@@ -8,7 +8,7 @@ import org.bukkit.OfflinePlayer;
 import java.awt.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
 
 public class DiscordBot {
     private final Main plugin = Main.getPlugin(Main.class);
@@ -161,8 +161,9 @@ public class DiscordBot {
 
     private String getIP(OfflinePlayer player) {
         try {
-            Statement statement = values.getConnection().createStatement();
-            ResultSet set = statement.executeQuery("SELECT `IP` FROM " + values.getTablePlayerData() + " WHERE `UUID` = '" + player.getUniqueId().toString() + "'");
+            PreparedStatement statement = values.getConnection().prepareStatement("SELECT `IP` FROM " + values.getTablePlayerData() + " WHERE `UUID` = ?");
+            statement.setString(1, player.getUniqueId().toString());
+            ResultSet set = statement.executeQuery();
             if (set.next()) {
                 return set.getString(1);
             }

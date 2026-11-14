@@ -31,7 +31,8 @@ public class MuteOnTalk implements Listener {
         Player player = e.getPlayer();
         try {
             PreparedStatement statement = values.getConnection().prepareStatement("SELECT `REASON`, `DATE_TIME_LIFTED`,`PUNISHER_UUID` FROM "
-                    + values.getTablePunishmentMute() + " WHERE `UUID` = '" + player.getUniqueId() + "'");
+                    + values.getTablePunishmentMute() + " WHERE `UUID` = ?");
+            statement.setString(1, player.getUniqueId().toString());
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 if(player.hasPermission("superreport.bypass.mute")) {
@@ -57,9 +58,13 @@ public class MuteOnTalk implements Listener {
                         e.setCancelled(true);
                         player.sendMessage(ChatColor.translateAlternateColorCodes('&', message).replace("{reason}", reason).replace("{time}", GetDuration.getDuration(new Date(System.currentTimeMillis()), dateTimeLifted)).replace("{muter}", banner.getName()));
                     } else {
-                        PreparedStatement archivePunishment = values.getConnection().prepareStatement("INSERT INTO " + values.getTablePunishmentArchived() + " (`UUID`,`TYPE`,`DATE_ARCHIVED`,`REASON`,`PUNISHER_UUID`) VALUES ('" + player.getUniqueId() + "','mute'," + getDateTime() + ",'" + reason + "','" + banner.getUniqueId() + "')");
+                        PreparedStatement archivePunishment = values.getConnection().prepareStatement("INSERT INTO " + values.getTablePunishmentArchived() + " (`UUID`,`TYPE`,`DATE_ARCHIVED`,`REASON`,`PUNISHER_UUID`) VALUES (?,'mute'," + getDateTime() + ",?,?)");
+                        archivePunishment.setString(1, player.getUniqueId().toString());
+                        archivePunishment.setString(2, reason);
+                        archivePunishment.setString(3, banner.getUniqueId().toString());
                         archivePunishment.executeUpdate();
-                        PreparedStatement deletePunishment = values.getConnection().prepareStatement("DELETE FROM " + values.getTablePunishmentMute() + " WHERE `UUID` = '" + player.getUniqueId() + "'");
+                        PreparedStatement deletePunishment = values.getConnection().prepareStatement("DELETE FROM " + values.getTablePunishmentMute() + " WHERE `UUID` = ?");
+                        deletePunishment.setString(1, player.getUniqueId().toString());
                         deletePunishment.executeUpdate();
                     }
                 }

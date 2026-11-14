@@ -30,7 +30,8 @@ public class BanOnJoin implements Listener {
         Player player = e.getPlayer();
         try {
             PreparedStatement statement = values.getConnection().prepareStatement("SELECT `REASON`, `DATE_TIME_LIFTED`,`PUNISHER_UUID` FROM "
-                    + values.tablePunishmentBan + " WHERE `UUID` = '" + player.getUniqueId() + "'");
+                    + values.tablePunishmentBan + " WHERE `UUID` = ?");
+            statement.setString(1, player.getUniqueId().toString());
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 if(player.hasPermission("superreport.bypass.ban")) {
@@ -55,9 +56,13 @@ public class BanOnJoin implements Listener {
                         String message = listMessage.stream().map(n -> String.valueOf(n)).collect(Collectors.joining("\n"));
                         e.disallow(PlayerLoginEvent.Result.KICK_OTHER, ChatColor.translateAlternateColorCodes('&', message).replace("{reason}", reason).replace("{time}", GetDuration.getDuration(new Date(System.currentTimeMillis()), dateTimeLifted)).replace("{banner}", banner.getName()));
                     } else {
-                        PreparedStatement archivePunishment = values.getConnection().prepareStatement("INSERT INTO " + values.getTablePunishmentArchived() + " (`UUID`,`TYPE`,`DATE_ARCHIVED`,`REASON`,`PUNISHER_UUID`) VALUES ('" + player.getUniqueId() + "','ban'," + getDateTime() + ",'" + reason + "','" + banner.getUniqueId() + "')");
+                        PreparedStatement archivePunishment = values.getConnection().prepareStatement("INSERT INTO " + values.getTablePunishmentArchived() + " (`UUID`,`TYPE`,`DATE_ARCHIVED`,`REASON`,`PUNISHER_UUID`) VALUES (?,'ban'," + getDateTime() + ",?,?)");
+                        archivePunishment.setString(1, player.getUniqueId().toString());
+                        archivePunishment.setString(2, reason);
+                        archivePunishment.setString(3, banner.getUniqueId().toString());
                         archivePunishment.executeUpdate();
-                        PreparedStatement deletePunishment = values.getConnection().prepareStatement("DELETE FROM " + values.getTablePunishmentBan() + " WHERE `UUID` = '" + player.getUniqueId() + "'");
+                        PreparedStatement deletePunishment = values.getConnection().prepareStatement("DELETE FROM " + values.getTablePunishmentBan() + " WHERE `UUID` = ?");
+                        deletePunishment.setString(1, player.getUniqueId().toString());
                         deletePunishment.executeUpdate();
                     }
                 }

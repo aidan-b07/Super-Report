@@ -56,7 +56,8 @@ public class FilePunishment {
     private UUID getVictimUuid(UUID uuid, Player player) {
         try {
             PreparedStatement getVictim = values.getConnection().prepareStatement("SELECT `REPORTED_UUID` " +
-                    "FROM " + values.getTableReportsActive() + " WHERE `UUID` = '" + uuid + "'");
+                    "FROM " + values.getTableReportsActive() + " WHERE `UUID` = ?");
+            getVictim.setString(1, uuid.toString());
             ResultSet set = getVictim.executeQuery();
             if(set.next()) {
                 return UUID.fromString(set.getString(1));
@@ -84,9 +85,13 @@ public class FilePunishment {
 
     private void executeInsert(UUID reportedUuid, String table, String dateTime, String reason, Player player) {
         try {
+            // dateTime is a SQL expression built from an int (see getDateTime), so it stays in the query text
             String update = "INSERT INTO " + table + " (`UUID`,`DATE_TIME_LIFTED`,`REASON`,`PUNISHER_UUID`,`NEW`) VALUES " +
-                    "('" + reportedUuid + "'," + dateTime + ",'" + reason + "','" + player.getUniqueId() + "','true')";
+                    "(?," + dateTime + ",?,?,'true')";
             PreparedStatement statement = values.getConnection().prepareStatement(update);
+            statement.setString(1, reportedUuid.toString());
+            statement.setString(2, reason);
+            statement.setString(3, player.getUniqueId().toString());
             statement.executeUpdate();
             statement.close();
             player.sendMessage(ChatColor.GREEN + "Player punished successfully!");

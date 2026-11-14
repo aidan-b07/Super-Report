@@ -24,16 +24,21 @@ public class UnmuteCommand implements CommandExecutor {
                 try {
                     String stringPlayer = args[0];
                     OfflinePlayer player = Bukkit.getOfflinePlayer(stringPlayer);
-                    PreparedStatement getConnectionValues = values.getConnection().prepareStatement("SELECT `REASON`,`PUNISHER_UUID` FROM " + values.getTablePunishmentMute() + " WHERE UUID = '" + player.getUniqueId() + "'");
+                    PreparedStatement getConnectionValues = values.getConnection().prepareStatement("SELECT `REASON`,`PUNISHER_UUID` FROM " + values.getTablePunishmentMute() + " WHERE UUID = ?");
+                    getConnectionValues.setString(1, player.getUniqueId().toString());
                     ResultSet valuesSet = getConnectionValues.executeQuery();
                     if (valuesSet.next()) {
                         String reason = valuesSet.getString(1);
                         String punisherStringUuid = valuesSet.getString(2);
                         UUID punisherUuid = UUID.fromString(punisherStringUuid);
 
-                        PreparedStatement archivePunishment = values.getConnection().prepareStatement("INSERT INTO " + values.getTablePunishmentArchived() + " (`UUID`,`TYPE`,`DATE_ARCHIVED`,`REASON`,`PUNISHER_UUID`) VALUES ('" + player.getUniqueId() + "','ban'," + getDateTime() + ",'" + reason + "','" + punisherUuid + "')");
+                        PreparedStatement archivePunishment = values.getConnection().prepareStatement("INSERT INTO " + values.getTablePunishmentArchived() + " (`UUID`,`TYPE`,`DATE_ARCHIVED`,`REASON`,`PUNISHER_UUID`) VALUES (?,'ban'," + getDateTime() + ",?,?)");
+                        archivePunishment.setString(1, player.getUniqueId().toString());
+                        archivePunishment.setString(2, reason);
+                        archivePunishment.setString(3, punisherUuid.toString());
                         archivePunishment.executeUpdate();
-                        PreparedStatement deletePunishment = values.getConnection().prepareStatement("DELETE FROM " + values.getTablePunishmentMute() + " WHERE `UUID` = '" + player.getUniqueId() + "'");
+                        PreparedStatement deletePunishment = values.getConnection().prepareStatement("DELETE FROM " + values.getTablePunishmentMute() + " WHERE `UUID` = ?");
+                        deletePunishment.setString(1, player.getUniqueId().toString());
                         deletePunishment.executeUpdate();
 
                         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', mc.getPunishmentsCfg().getString("UnmuteCommand.Successful")));

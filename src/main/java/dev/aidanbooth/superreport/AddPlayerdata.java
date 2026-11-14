@@ -40,7 +40,8 @@ public class AddPlayerdata implements Listener {
     public void createPlayer(Player player) {
         UUID uuid = player.getUniqueId();
         try {
-            PreparedStatement statement = values.getConnection().prepareStatement("SELECT * FROM " + values.getTablePlayerData() + " WHERE UUID='" + uuid.toString() + "'");
+            PreparedStatement statement = values.getConnection().prepareStatement("SELECT * FROM " + values.getTablePlayerData() + " WHERE UUID=?");
+            statement.setString(1, uuid.toString());
             ResultSet results = statement.executeQuery();
             results.next();
             if (playerExists(uuid) == false) {
@@ -54,7 +55,9 @@ public class AddPlayerdata implements Listener {
                 insert.setString(7, player.getAddress().toString());
                 insert.executeUpdate();
             } else {
-                PreparedStatement update = values.getConnection().prepareStatement("UPDATE " + values.getTablePlayerData() + " SET `IP` = '" + player.getAddress().getAddress().toString() + "', ONLINE = 1 WHERE UUID='" + uuid.toString() + "'");
+                PreparedStatement update = values.getConnection().prepareStatement("UPDATE " + values.getTablePlayerData() + " SET `IP` = ?, ONLINE = 1 WHERE UUID=?");
+                update.setString(1, player.getAddress().getAddress().toString());
+                update.setString(2, uuid.toString());
                 update.executeUpdate();
                 update.close();
             }

@@ -36,7 +36,8 @@ public class BanRunnable {
                             public void run() {
                                 try {
                                     try {
-                                        PreparedStatement statement1 = values.getConnection().prepareStatement("UPDATE " + values.getTablePunishmentBan() + "SET `NEW` = 0 WHERE UUID = '" + player.getUniqueId().toString() + "'");
+                                        PreparedStatement statement1 = values.getConnection().prepareStatement("UPDATE " + values.getTablePunishmentBan() + " SET `NEW` = 0 WHERE UUID = ?");
+                                        statement1.setString(1, player.getUniqueId().toString());
                                         statement1.executeUpdate();
                                     }catch (NullPointerException o) {
                                     }

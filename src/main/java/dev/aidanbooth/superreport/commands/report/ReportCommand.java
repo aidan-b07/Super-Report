@@ -56,9 +56,12 @@ public class ReportCommand implements CommandExecutor {
                             try { //Add report to active reports
                                 String uuid = GenerateUUID.getNewUuid();
                                 PreparedStatement addReport = GetValues.getConnection().prepareStatement("INSERT INTO " + GetValues.getTableReportsActive() +
-                                        " (UUID,REPORTER_UUID,REPORTED_UUID,DATE_TIME_REPORTED,REASON) VALUES " +
-                                        "('" + uuid + "','" + player.getUniqueId().toString() + "','" + reportedPlayer.getUniqueId().toString() +
-                                        "','" + currentTime + "','" + reason + "')");
+                                        " (UUID,REPORTER_UUID,REPORTED_UUID,DATE_TIME_REPORTED,REASON) VALUES (?,?,?,?,?)");
+                                addReport.setString(1, uuid);
+                                addReport.setString(2, player.getUniqueId().toString());
+                                addReport.setString(3, reportedPlayer.getUniqueId().toString());
+                                addReport.setString(4, currentTime);
+                                addReport.setString(5, reason);
 
                                 addReport.executeUpdate(); //Executes update duh
 
@@ -71,7 +74,8 @@ public class ReportCommand implements CommandExecutor {
 
                             try { //Add report to reporter's player data
                                 PreparedStatement addReport = GetValues.getConnection().prepareStatement("UPDATE " + values.getTablePlayerData() +
-                                        " SET REPORTS = REPORTS + 1 WHERE UUID = '" + player.getUniqueId() + "'"); //Adds report to player data
+                                        " SET REPORTS = REPORTS + 1 WHERE UUID = ?"); //Adds report to player data
+                                addReport.setString(1, player.getUniqueId().toString());
                                 addReport.executeUpdate();
 
                                 addReport.close();
@@ -83,7 +87,8 @@ public class ReportCommand implements CommandExecutor {
 
                             try { //Add reported to reported player's player data
                                 PreparedStatement addReport = GetValues.getConnection().prepareStatement("UPDATE " + values.getTablePlayerData() +
-                                        " SET REPORTED = REPORTED + 1 WHERE UUID = '" + player.getUniqueId() + "'"); //Adds report to player data
+                                        " SET REPORTED = REPORTED + 1 WHERE UUID = ?"); //Adds report to player data
+                                addReport.setString(1, player.getUniqueId().toString());
                                 addReport.executeUpdate();
 
                                 addReport.close();
@@ -114,7 +119,9 @@ public class ReportCommand implements CommandExecutor {
     private boolean reportExists(Player reporter, OfflinePlayer reported) {
         try {
             PreparedStatement reportExists = GetValues.getConnection().prepareStatement("SELECT * FROM " + GetValues.getTableReportsActive()
-                    + " WHERE REPORTER_UUID = '" + reporter.getUniqueId() + "' AND REPORTED_UUID = '" + reported.getUniqueId() + "'");
+                    + " WHERE REPORTER_UUID = ? AND REPORTED_UUID = ?");
+            reportExists.setString(1, reporter.getUniqueId().toString());
+            reportExists.setString(2, reported.getUniqueId().toString());
             ResultSet set = reportExists.executeQuery();
             if(set.next()) {
                 return false;
@@ -129,7 +136,8 @@ public class ReportCommand implements CommandExecutor {
     private boolean isOnline(OfflinePlayer reportedPlayer, Player player) {
         try {
             PreparedStatement statement = values.getConnection().prepareStatement("SELECT * FROM " + values.getTablePlayerData()
-                    + " WHERE UUID = '" + reportedPlayer.getUniqueId().toString() + "'"); //Selects reported players SQL profile row
+                    + " WHERE UUID = ?"); //Selects reported players SQL profile row
+            statement.setString(1, reportedPlayer.getUniqueId().toString());
             ResultSet resultSet = statement.executeQuery(); //Gets information from this row#
             if (resultSet.next()) {
                 if (resultSet.getBoolean(4)) { //Checks if reported player is online

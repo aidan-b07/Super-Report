@@ -23,14 +23,16 @@ public class ControlPanelItems {
         String reportedUuid = ChatColor.stripColor(item.getItemMeta().getLore().get(0)).replace("Reported UUID - ", "");
 
         PreparedStatement reported = values.getConnection().prepareStatement("SELECT * FROM " + values.getTablePlayerData() +
-                " WHERE `UUID` = '" + reportedUuid + "'");
+                " WHERE `UUID` = ?");
+        reported.setString(1, reportedUuid);
         ResultSet reportedResult = reported.executeQuery();
         if(reportedResult.next()) {
             addReportedProfile(inv, item, reportedResult, true);
         }
 
         PreparedStatement reporter = values.getConnection().prepareStatement("SELECT * FROM " + values.getTablePlayerData() +
-                " WHERE `UUID` = '" + reporterUuid + "'");
+                " WHERE `UUID` = ?");
+        reporter.setString(1, reporterUuid);
         ResultSet reporterResult = reporter.executeQuery();
         if(reporterResult.next()) {
             addReportedProfile(inv, item, reporterResult, false);

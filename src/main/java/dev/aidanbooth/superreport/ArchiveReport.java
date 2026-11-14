@@ -15,7 +15,8 @@ public class ArchiveReport {
 
     public void transfer(Player resolver, UUID uuid) {
         try {
-            PreparedStatement getDateStatement = values.getConnection().prepareStatement("SELECT * FROM " + values.getTableReportsActive() + " WHERE UUID = '" + uuid + "'");
+            PreparedStatement getDateStatement = values.getConnection().prepareStatement("SELECT * FROM " + values.getTableReportsActive() + " WHERE UUID = ?");
+            getDateStatement.setString(1, uuid.toString());
             ResultSet rs = getDateStatement.executeQuery();
 
             if (rs.next()) {
@@ -24,7 +25,8 @@ public class ArchiveReport {
                 Timestamp dateReported = rs.getTimestamp(4); //TODO: ERROR HERE (1.11, 1.12) (ERROR PARSING DATE)
                 String reason = rs.getString(5);
 
-                PreparedStatement deleteStatement = values.getConnection().prepareStatement("DELETE FROM " + values.getTableReportsActive() + " WHERE UUID = '" + uuid + "'");
+                PreparedStatement deleteStatement = values.getConnection().prepareStatement("DELETE FROM " + values.getTableReportsActive() + " WHERE UUID = ?");
+                deleteStatement.setString(1, uuid.toString());
                 deleteStatement.executeUpdate();
 
                 PreparedStatement inactiveInsert = values.getConnection().prepareStatement("INSERT INTO " + values.getTableReportsInactive() + " (`UUID`,`REPORTER_UUID`,`REPORTED_UUID`,`RESOLVER_UUID`,`DATE_TIME_REPORTED`,`REASON`,`PUNISHMENT`) VALUES (?,?,?,?,?,?,?)");
@@ -38,10 +40,12 @@ public class ArchiveReport {
                 inactiveInsert.executeUpdate();
 
                 if (values.getSqlEnabled()) {
-                    PreparedStatement setDate = values.getConnection().prepareStatement("UPDATE " + values.getTableReportsInactive() + " SET DATE_TIME_RESOLVED = DATE_ADD(NOW(), INTERVAL 0 MINUTE_SECOND) WHERE UUID = '" + uuid + "'");
+                    PreparedStatement setDate = values.getConnection().prepareStatement("UPDATE " + values.getTableReportsInactive() + " SET DATE_TIME_RESOLVED = DATE_ADD(NOW(), INTERVAL 0 MINUTE_SECOND) WHERE UUID = ?");
+                    setDate.setString(1, uuid.toString());
                     setDate.executeUpdate();
                 } else {
-                    PreparedStatement setDate = values.getConnection().prepareStatement("UPDATE " + values.getTableReportsInactive() + " SET DATE_TIME_RESOLVED = CURRENT_DATE WHERE UUID = '" + uuid + "'");
+                    PreparedStatement setDate = values.getConnection().prepareStatement("UPDATE " + values.getTableReportsInactive() + " SET DATE_TIME_RESOLVED = CURRENT_DATE WHERE UUID = ?");
+                    setDate.setString(1, uuid.toString());
                     setDate.executeUpdate();
                 }
                 resolver.sendMessage(ChatColor.GREEN + "Report dismissed successfully!"); //TODO CUSTOM MESSAGE
