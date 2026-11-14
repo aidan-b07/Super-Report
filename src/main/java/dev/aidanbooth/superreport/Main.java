@@ -124,6 +124,15 @@ public class Main extends JavaPlugin {
         playerData = new PlayerDataRepository(database);
         reports = new ReportRepository(database);
         punishments = new PunishmentRepository(database);
+
+        // A crash skips quit events. Only safe on SQLite, a shared MySQL database has players on other servers
+        if (!getConfig().getBoolean("MySQL.MySqlEnabled")) {
+            try {
+                playerData.markAllOffline();
+            } catch (SQLException e) {
+                getLogger().log(Level.WARNING, "Could not reset online players", e);
+            }
+        }
         return true;
     }
 

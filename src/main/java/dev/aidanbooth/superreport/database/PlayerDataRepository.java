@@ -44,6 +44,14 @@ public final class PlayerDataRepository {
         return find(player).map(PlayerData::ip);
     }
 
+    public void recordQuit(UUID player) throws SQLException {
+        database.update("UPDATE " + Tables.PLAYER_DATA + " SET `ONLINE` = ? WHERE `UUID` = ?", false, player.toString());
+    }
+
+    public void markAllOffline() throws SQLException {
+        database.update("UPDATE " + Tables.PLAYER_DATA + " SET `ONLINE` = ?", false);
+    }
+
     public void incrementReports(UUID player) throws SQLException {
         database.update("UPDATE " + Tables.PLAYER_DATA + " SET `REPORTS` = `REPORTS` + 1 WHERE `UUID` = ?",
                 player.toString());

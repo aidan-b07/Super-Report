@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.sql.SQLException;
 import java.util.UUID;
@@ -23,6 +24,18 @@ public class AddPlayerdata implements Listener {
                 plugin.getPlayerData().recordJoin(uuid, ip);
             } catch (SQLException ex) {
                 plugin.getServer().getConsoleSender().sendMessage(ErrorCodes.getTemplate("007"));
+                ex.printStackTrace();
+            }
+        });
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        UUID uuid = e.getPlayer().getUniqueId();
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                plugin.getPlayerData().recordQuit(uuid);
+            } catch (SQLException ex) {
                 ex.printStackTrace();
             }
         });

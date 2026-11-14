@@ -24,9 +24,14 @@ public final class PunishmentRepository {
 
     public void add(PunishmentType type, UUID player, String reason, UUID punisher, int durationSeconds) throws SQLException {
         String expires = durationSeconds == PERMANENT ? Timestamps.PERMANENT : Timestamps.secondsFromNow(durationSeconds);
-        database.update("INSERT INTO " + type.table()
-                        + " (`UUID`, `DATE_TIME_LIFTED`, `REASON`, `PUNISHER_UUID`, `NEW`) VALUES (?, ?, ?, ?, ?)",
-                player.toString(), expires, reason, punisher.toString(), true);
+        database.transaction(conn -> {
+            Database.update(conn, "INSERT INTO " + type.table()
+                            + " (`UUID`, `DATE_TIME_LIFTED`, `REASON`, `PUNISHER_UUID`, `NEW`) VALUES (?, ?, ?, ?, ?)",
+                    player.toString(), expires, reason, punisher.toString(), true);
+            Database.update(conn, "UPDATE " + Tables.PLAYER_DATA + " SET `" + type.countColumn() + "` = `"
+                    + type.countColumn() + "` + 1 WHERE `UUID` = ?", player.toString());
+            return null;
+        });
     }
 
     public Optional<Punishment> find(PunishmentType type, UUID player) throws SQLException {

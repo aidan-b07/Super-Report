@@ -70,6 +70,32 @@ class RepositoryTest {
     }
 
     @Test
+    void quittingAndRestartingMarkPlayersOffline() throws SQLException {
+        playerData.recordJoin(alice, "1.1.1.1");
+        playerData.recordJoin(bob, "2.2.2.2");
+
+        playerData.recordQuit(alice);
+        assertFalse(playerData.find(alice).get().online());
+        assertTrue(playerData.find(bob).get().online());
+
+        playerData.markAllOffline();
+        assertFalse(playerData.find(bob).get().online());
+    }
+
+    @Test
+    void punishmentsAreCountedPerPlayer() throws SQLException {
+        playerData.recordJoin(alice, "1.1.1.1");
+
+        punishments.add(PunishmentType.BAN, alice, "hacking", staff, 600);
+        punishments.add(PunishmentType.MUTE, alice, "spam", staff, 600);
+        punishments.add(PunishmentType.MUTE, alice, "spam again", staff, PunishmentRepository.PERMANENT);
+
+        PlayerData data = playerData.find(alice).get();
+        assertEquals(1, data.bans());
+        assertEquals(2, data.mutes());
+    }
+
+    @Test
     void reasonsWithQuotesAreStoredAsTyped() throws SQLException {
         String reason = "he's flying'); DROP TABLE " + Tables.REPORTS_ACTIVE + "; --";
         Report report = reports.create(alice, bob, reason);
