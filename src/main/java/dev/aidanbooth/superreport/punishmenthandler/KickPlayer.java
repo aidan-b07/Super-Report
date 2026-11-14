@@ -5,6 +5,7 @@ import dev.aidanbooth.superreport.configs.MessagesConfig;
 import dev.aidanbooth.superreport.utils.GetDuration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.sql.PreparedStatement;
@@ -37,7 +38,7 @@ public class KickPlayer {
 
                 String stringBannerUuid = rs.getString(3);
                 UUID bannerUuid = UUID.fromString(stringBannerUuid);
-                Player banner = Bukkit.getPlayer(bannerUuid);
+                OfflinePlayer banner = Bukkit.getOfflinePlayer(bannerUuid);
 
                 if (rs.getString(2).equals("2000-01-01 00:00:00")) {
                     List<String> listMessage = mc.getPunishmentsCfg().getStringList("PermanentBanMessage");
