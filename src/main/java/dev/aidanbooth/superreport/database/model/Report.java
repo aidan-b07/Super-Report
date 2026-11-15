@@ -6,14 +6,14 @@ public final class Report {
 
     private final UUID id;
     private final UUID reporter;
-    private final UUID reported;
+    private final UUID player;
     private final String reportedAt;
     private final String reason;
 
     public Report(UUID id, UUID reporter, UUID reported, String reportedAt, String reason) {
         this.id = id;
         this.reporter = reporter;
-        this.reported = reported;
+        this.player = reported;
         this.reportedAt = reportedAt;
         this.reason = reason;
     }
@@ -26,8 +26,8 @@ public final class Report {
         return reporter;
     }
 
-    public UUID reported() {
-        return reported;
+    public UUID player() {
+        return player;
     }
 
     public String reportedAt() {
