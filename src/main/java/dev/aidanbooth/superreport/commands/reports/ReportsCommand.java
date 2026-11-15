@@ -5,6 +5,7 @@ import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.database.model.Report;
 import dev.aidanbooth.superreport.utils.ErrorCodes;
+import dev.aidanbooth.superreport.utils.PlayerUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -22,49 +23,46 @@ import java.util.UUID;
 
 public class ReportsCommand implements CommandExecutor {
     private Main plugin = Main.getPlugin(Main.class);
-    private GetValues values = new GetValues();
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("reports")) {
-            if (sender instanceof Player) {
-                Player player = (Player) sender;
-                Inventory reportsInv = Bukkit.createInventory(null, 54, ChatColor.GOLD + "Reports"); //Creates reports inventory
-                try {
-                    for (Report report : plugin.getReports().findAll()) {
-                        addReportsItems(reportsInv, report.id().toString(), report.reporter().toString(),
-                                report.reported().toString(), report.reportedAt(), report.reason());
-                    }
-                } catch (SQLException o) {
-                    plugin.getServer().getConsoleSender().sendMessage(ErrorCodes.getTemplate("008"));
-                    o.printStackTrace();
-                }
-                player.openInventory(reportsInv);
-                return true;
-            } else {
-                sender.sendMessage(ChatColor.RED + "You have to be a player to use this command!");
-                return true;
-            }
+        if (!cmd.getName().equalsIgnoreCase("reports")) return false;
+        if (sender instanceof Player) {
+            sender.sendMessage(ChatColor.RED + "You must be a player to use this command!");
+            return true;
         }
-        return false;
+
+        Player player = (Player) sender;
+        Inventory reportsInv = Bukkit.createInventory(null, 54, ChatColor.GOLD + "Reports"); //Creates reports inventory
+        try {
+            for (Report report : plugin.getReports().findAll()) {
+                addReportsItems(reportsInv, report);
+            }
+        } catch (SQLException o) {
+            plugin.getServer().getConsoleSender().sendMessage(ErrorCodes.getTemplate("008"));
+            o.printStackTrace();
+        }
+        player.openInventory(reportsInv);
+        return true;
+
     }
-    private void addReportsItems(Inventory inv, String reportUuid, String reporterUuid, String reportedUuid, String dateTimeReported, String reason) {
+    private void addReportsItems(Inventory inv, Report report) {
         if(!isFull(inv)) {
-            OfflinePlayer reporter = Bukkit.getOfflinePlayer(UUID.fromString(reporterUuid));
-            OfflinePlayer reported = Bukkit.getOfflinePlayer(UUID.fromString(reportedUuid));
+            OfflinePlayer reporter = Bukkit.getOfflinePlayer(report.reporter());
+            OfflinePlayer reported = Bukkit.getOfflinePlayer(report.player());
 
             ItemStack item = XMaterial.NETHER_STAR.parseItem(); //Creates the item //TODO: MAKE CUSTOM ITEM
-            ItemMeta itemMeta = item.getItemMeta(); //Sets meta
-            itemMeta.setDisplayName(ChatColor.GOLD + "Reported Name - " + ChatColor.GRAY + reported.getName()); //Sets reported players name
+            ItemMeta itemMeta = item.getItemMeta();
+            itemMeta.setDisplayName(ChatColor.GOLD + "Reported Name - " + ChatColor.GRAY + PlayerUtils.GetUsername(report.player()));
             itemMeta.setLore(Arrays.asList(
-                    ChatColor.GOLD + "Reported UUID - " + ChatColor.GRAY + reportedUuid, //Sets reported uuid
-                    ChatColor.GOLD + "Reporter - " + ChatColor.GRAY + reporter.getName(), //Sets reporters name
-                    ChatColor.GOLD + "Reporter UUID - " + ChatColor.GRAY + reporterUuid, //Sets reporters UUID
-                    ChatColor.GOLD + "Time / Date - " + ChatColor.GRAY + dateTimeReported, //Sets Time/Date reported
-                    ChatColor.GOLD + "Reason - " + ChatColor.GRAY + reason,
-                    ChatColor.GRAY + reportUuid)); //Sets reason
-            item.setItemMeta(itemMeta); //Sets the item with the meta
-            inv.addItem(item); //Adds item to menu
+                    ChatColor.GOLD + "Reported UUID - " + ChatColor.GRAY + report.player(),
+                    ChatColor.GOLD + "Reporter - " + ChatColor.GRAY + PlayerUtils.GetUsername(report.reporter()),
+                    ChatColor.GOLD + "Reporter UUID - " + ChatColor.GRAY + report.reporter(),
+                    ChatColor.GOLD + "Time / Date - " + ChatColor.GRAY + report.reportedAt(),
+                    ChatColor.GOLD + "Reason - " + ChatColor.GRAY + report.reason(),
+                    ChatColor.GRAY + report.id().toString()));
+            item.setItemMeta(itemMeta);
+            inv.addItem(item);
         }
     }
     public boolean isFull(Inventory inv) {
