@@ -18,21 +18,23 @@ public class PunishCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("punish")) {
-            if (sender instanceof Player) {
-                Player player = (Player) sender;
-                if (args.length > 0) {
-                    OfflinePlayer punished = Bukkit.getOfflinePlayer(args[0]);
-                    UUID punishedUuid = punished.getUniqueId();
+        if (!cmd.getName().equalsIgnoreCase("punish")) return false;
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("You must be a player to use this command!");
+            return true;
+        }
 
-                    values.addPunishingPlayer(player, punishedUuid);
+        Player player = (Player) sender;
+        if (args.length > 0) {
+            OfflinePlayer punished = Bukkit.getOfflinePlayer(args[0]);
+            UUID punishedUuid = punished.getUniqueId();
 
-                    Inventory inv = Bukkit.createInventory(null, 27, ChatColor.GOLD + "Punish Player");
-                    PunishmentChoiceItems.addPunishmentInvItems(inv);
-                    player.openInventory(inv);
-                    return true;
-                }
-            }
+            values.addPunishingPlayer(player, punishedUuid);
+
+            Inventory inv = Bukkit.createInventory(null, 27, ChatColor.GOLD + "Punish Player");
+            PunishmentChoiceItems.addPunishmentInvItems(inv);
+            player.openInventory(inv);
+            return true;
         }
         return false;
     }
