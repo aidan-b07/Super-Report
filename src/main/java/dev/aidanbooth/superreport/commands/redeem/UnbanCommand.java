@@ -14,17 +14,20 @@ import java.sql.SQLException;
 
 public class UnbanCommand implements CommandExecutor {
     private final Main plugin = Main.getPlugin(Main.class);
-    private final MessagesConfig mc = new MessagesConfig();
+    private final String message;
+
+    public UnbanCommand() {
+        message = ChatColor.translateAlternateColorCodes('&', plugin.getMessageConfig().config().getString("UnbanCommand.Successful"));
+    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!cmd.getName().equalsIgnoreCase("unban") || args.length == 0) {
-            return false;
-        }
+        if (!cmd.getName().equalsIgnoreCase("unban") || args.length == 0) return false;
+
         OfflinePlayer player = Bukkit.getOfflinePlayer(args[0]);
         try {
             if (plugin.getPunishments().archive(PunishmentType.BAN, player.getUniqueId())) {
-                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', mc.getPunishmentsCfg().getString("UnbanCommand.Successful")));
+                sender.sendMessage(message);
                 return true;
             }
         } catch (SQLException e) {

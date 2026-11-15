@@ -14,7 +14,11 @@ import java.sql.SQLException;
 
 public class UnmuteCommand implements CommandExecutor {
     private final Main plugin = Main.getPlugin(Main.class);
-    private final MessagesConfig mc = new MessagesConfig();
+    private final String message;
+
+    public UnmuteCommand() {
+        message = ChatColor.translateAlternateColorCodes('&', plugin.getMessageConfig().config().getString("UnmuteCommand.Successful"));
+    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -24,7 +28,7 @@ public class UnmuteCommand implements CommandExecutor {
         OfflinePlayer player = Bukkit.getOfflinePlayer(args[0]);
         try {
             if (plugin.getPunishments().archive(PunishmentType.MUTE, player.getUniqueId())) {
-                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', mc.getPunishmentsCfg().getString("UnmuteCommand.Successful")));
+                sender.sendMessage(message);
                 return true;
             }
         } catch (SQLException e) {

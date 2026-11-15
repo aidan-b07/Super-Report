@@ -1,6 +1,7 @@
 package dev.aidanbooth.superreport.commands.reports.reasons;
 
 import com.cryptomorin.xseries.XMaterial;
+import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.configs.BanReasonsConfig;
 import dev.aidanbooth.superreport.configs.MuteReasonsConfig;
 import dev.aidanbooth.superreport.GetValues;
@@ -13,34 +14,33 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class ReasonsInvItems {
+    private Main plugin = Main.getPlugin(Main.class);
     private GetValues values = new GetValues();
-    private BanReasonsConfig brc = new BanReasonsConfig();
-    private MuteReasonsConfig mrc = new MuteReasonsConfig();
 
     public void openInventory(Player player) {
         String type = (String) values.getPunishmentType().get(player);
         Inventory inv = null;
 
         if(type.equals("ban")) {
-            int size = brc.getBanReasonsCfg().getInt("Size");
+            int size = plugin.getBanReasonConfig().config().getInt("Size");
             inv = Bukkit.createInventory(null, size, ChatColor.GOLD + "Ban Reason");
-            for (String key : brc.getBanReasonsCfg().getConfigurationSection("Items.Slot").getKeys(false)) {
-                XMaterial mat = ConfigMaterials.get(brc.getBanReasonsCfg().getString("Items.Slot." + key + ".Material"),
+            for (String key : plugin.getBanReasonConfig().config().getConfigurationSection("Items.Slot").getKeys(false)) {
+                XMaterial mat = ConfigMaterials.get(plugin.getBanReasonConfig().config().getString("Items.Slot." + key + ".Material"),
                         "Ban-Reasons.yml > Items.Slot." + key + ".Material");
                 int slot = Integer.parseInt(key);
-                String name = brc.getBanReasonsCfg().getString("Items.Slot." + key + ".Name");
-                int amount = brc.getBanReasonsCfg().getInt("Items.Slot." + key + ".Amount");
+                String name = plugin.getBanReasonConfig().config().getString("Items.Slot." + key + ".Name");
+                int amount = plugin.getBanReasonConfig().config().getInt("Items.Slot." + key + ".Amount");
                 addItem(mat, inv, slot, name, amount);
             }
         } else if (type.equals("mute")) {
-            int size = mrc.getMuteReasonsCfg().getInt("Size");
+            int size = plugin.getMuteReasonConfig().config().getInt("Size");
             inv = Bukkit.createInventory(null, size, ChatColor.GOLD + "Mute Reason");
-            for (String key : mrc.getMuteReasonsCfg().getConfigurationSection("Items.Slot").getKeys(false)) {
-                XMaterial mat = ConfigMaterials.get(mrc.getMuteReasonsCfg().getString("Items.Slot." + key + ".Material"),
+            for (String key : plugin.getMuteReasonConfig().config().getConfigurationSection("Items.Slot").getKeys(false)) {
+                XMaterial mat = ConfigMaterials.get(plugin.getMuteReasonConfig().config().getString("Items.Slot." + key + ".Material"),
                         "Mute-Reasons.yml > Items.Slot." + key + ".Material");
                 int slot = Integer.parseInt(key);
-                String name = mrc.getMuteReasonsCfg().getString("Items.Slot." + key + ".Name");
-                int amount = mrc.getMuteReasonsCfg().getInt("Items.Slot." + key + ".Amount");
+                String name = plugin.getMuteReasonConfig().config().getString("Items.Slot." + key + ".Name");
+                int amount = plugin.getMuteReasonConfig().config().getInt("Items.Slot." + key + ".Amount");
                 addItem(mat, inv, slot, name, amount);
             }
         }

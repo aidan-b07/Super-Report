@@ -18,16 +18,15 @@ import java.util.List;
 public class OpenReportInventory {
     private Main plugin = Main.getPlugin(Main.class);
     private GetValues values = new GetValues();
-    private ReportMenuConfig rmc = new ReportMenuConfig();
 
     public void openInventory(Player player, OfflinePlayer reported) {
         int size = values.getReportMenuSize(); //Size of inventory
         Inventory inv = Bukkit.createInventory(null, size, ChatColor.GOLD + "Report " + reported.getName()); //Creates inventory
 
-        String fillItemMaterial = rmc.getPunishmentsCfg().getString("ReportMenu.Items.Fill.Material"); //Get material from config
+        String fillItemMaterial = plugin.getReportMenuConfig().config().getString("ReportMenu.Items.Fill.Material"); //Get material from config
         ItemStack fillItem = ConfigMaterials.get(fillItemMaterial, "ReportMenu.yml > ReportMenu.Items.Fill.Material").parseItem(); //Set material
         ItemMeta fillItemMeta = fillItem.getItemMeta(); //Get fill meta
-        String fillItemName = ChatColor.translateAlternateColorCodes('&', rmc.getPunishmentsCfg().getString("ReportMenu.Items.Fill.Name")); //Get fill name
+        String fillItemName = ChatColor.translateAlternateColorCodes('&', plugin.getReportMenuConfig().config().getString("ReportMenu.Items.Fill.Name")); //Get fill name
         fillItemMeta.setDisplayName(fillItemName); //Sets name
         fillItem.setItemMeta(fillItemMeta); //Set item meta
         for (int x = 0; x < size; x++) {
@@ -42,13 +41,13 @@ public class OpenReportInventory {
     }
 
     private void addConfigItems(Inventory reportInv, OfflinePlayer reported) {
-        for (String key : rmc.getPunishmentsCfg().getConfigurationSection("ReportMenu.Items.Slot").getKeys(false)) { //For each item
-            String material = rmc.getPunishmentsCfg().getString("ReportMenu.Items.Slot." + key + ".Material"); //Gets material from config
+        for (String key : plugin.getReportMenuConfig().config().getConfigurationSection("ReportMenu.Items.Slot").getKeys(false)) { //For each item
+            String material = plugin.getReportMenuConfig().config().getString("ReportMenu.Items.Slot." + key + ".Material"); //Gets material from config
             ItemStack mat = ConfigMaterials.get(material, "ReportMenu.yml > ReportMenu.Items.Slot." + key + ".Material").parseItem(); //Falls back to a barrier if the config is wrong
             int slot = Integer.parseInt(key); //Get slot
-            String name = rmc.getPunishmentsCfg().getString("ReportMenu.Items.Slot." + key + ".Name"); //get item name
-            List<String> lore = rmc.getPunishmentsCfg().getStringList("ReportMenu.Items.Slot." + key + ".Lore"); //Get item lore
-            int amount = rmc.getPunishmentsCfg().getInt("ReportMenu.Items.Slot." + key + ".Amount"); //Get amount
+            String name = plugin.getReportMenuConfig().config().getString("ReportMenu.Items.Slot." + key + ".Name"); //get item name
+            List<String> lore = plugin.getReportMenuConfig().config().getStringList("ReportMenu.Items.Slot." + key + ".Lore"); //Get item lore
+            int amount = plugin.getReportMenuConfig().config().getInt("ReportMenu.Items.Slot." + key + ".Amount"); //Get amount
 
             ItemStack item = mat; //Creates itemstack
             ItemMeta meta = item.getItemMeta(); //Creates meta

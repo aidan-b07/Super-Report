@@ -1,5 +1,6 @@
 package dev.aidanbooth.superreport.commands.report;
 
+import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.configs.ReportMenuConfig;
 import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.utils.GetInventoryName;
@@ -11,15 +12,15 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 public class SetReportReason implements Listener {
-    private ReportMenuConfig rmc = new ReportMenuConfig();
+    private Main plugin = Main.getPlugin(Main.class);
     private GetValues values = new GetValues();
 
     @EventHandler
     private void onClick(InventoryClickEvent e) {
         if(GetInventoryName.getName(e).contains(ChatColor.GOLD + "Report") && !GetInventoryName.getName(e).contains(ChatColor.GOLD + "Dismiss")) { //Checks if report menu
             e.setCancelled(true);
-            if (rmc.getPunishmentsCfg().getConfigurationSection("ReportMenu.Items.Slot").contains(String.valueOf(e.getSlot()))) { //Checks if slot is configured in config
-                if (rmc.getPunishmentsCfg().getBoolean("ReportMenu.Items.Slot." + e.getSlot() + ".Option")) { //Checks if its a report option
+            if (plugin.getReportMenuConfig().config().getConfigurationSection("ReportMenu.Items.Slot").contains(String.valueOf(e.getSlot()))) { //Checks if slot is configured in config
+                if (plugin.getReportMenuConfig().config().getBoolean("ReportMenu.Items.Slot." + e.getSlot() + ".Option")) { //Checks if its a report option
                     Player player = (Player) e.getWhoClicked();
                     Player reported = Bukkit.getPlayer(ChatColor.stripColor(GetInventoryName.getName(e)).replace("Report ", ""));
                     String reason = null;
