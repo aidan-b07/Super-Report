@@ -3,7 +3,6 @@ package dev.aidanbooth.superreport;
 import dev.aidanbooth.superreport.commands.PunishCommand;
 import dev.aidanbooth.superreport.commands.redeem.UnbanCommand;
 import dev.aidanbooth.superreport.commands.redeem.UnmuteCommand;
-import dev.aidanbooth.superreport.commands.reports.controlpanel.OutcomeListener;
 import dev.aidanbooth.superreport.commands.reports.ReportsCommand;
 import dev.aidanbooth.superreport.configs.BanReasonsConfig;
 import dev.aidanbooth.superreport.configs.MessagesConfig;
@@ -12,11 +11,6 @@ import dev.aidanbooth.superreport.configs.ReportMenuConfig;
 import dev.aidanbooth.superreport.pipeline.PipelineManager;
 import dev.aidanbooth.superreport.punishmenthandler.*;
 import dev.aidanbooth.superreport.commands.report.ReportCommand;
-import dev.aidanbooth.superreport.commands.reports.dismissinv.DismissListener;
-import dev.aidanbooth.superreport.commands.reports.GetClickedReport;
-import dev.aidanbooth.superreport.commands.reports.punishments.PunishmentListener;
-import dev.aidanbooth.superreport.commands.reports.reasons.ReasonListener;
-import dev.aidanbooth.superreport.commands.reports.timeinv.TimeListener;
 import dev.aidanbooth.superreport.database.Database;
 import dev.aidanbooth.superreport.database.PlayerDataRepository;
 import dev.aidanbooth.superreport.database.PunishmentRepository;
@@ -153,12 +147,6 @@ public class Main extends JavaPlugin {
     }
     private void registerListeners() {
         getServer().getPluginManager().registerEvents(new AddPlayerdata(), this);
-        getServer().getPluginManager().registerEvents(new GetClickedReport(), this);
-        getServer().getPluginManager().registerEvents(new OutcomeListener(), this);
-        getServer().getPluginManager().registerEvents(new DismissListener(), this);
-        getServer().getPluginManager().registerEvents(new PunishmentListener(), this);
-        getServer().getPluginManager().registerEvents(new TimeListener(), this);
-        getServer().getPluginManager().registerEvents(new ReasonListener(), this);
         getServer().getPluginManager().registerEvents(new BanOnJoin(), this);
         getServer().getPluginManager().registerEvents(new MuteOnTalk(), this);
         getServer().getPluginManager().registerEvents(pipelineManager, this);

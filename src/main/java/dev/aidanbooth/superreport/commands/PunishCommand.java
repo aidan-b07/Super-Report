@@ -1,6 +1,6 @@
 package dev.aidanbooth.superreport.commands;
 
-import dev.aidanbooth.superreport.commands.reports.punishments.PunishmentChoiceItems;
+import dev.aidanbooth.superreport.pipeline.punishPipeline.inventories.PunishmentTypeInventory;
 import dev.aidanbooth.superreport.GetValues;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -19,6 +19,10 @@ public class PunishCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!cmd.getName().equalsIgnoreCase("punish")) return false;
+        sender.sendMessage(ChatColor.RED + "Not available yet");
+        return true;
+        /*
+
         if (!(sender instanceof Player)) {
             sender.sendMessage("You must be a player to use this command!");
             return true;
@@ -32,10 +36,11 @@ public class PunishCommand implements CommandExecutor {
             values.addPunishingPlayer(player, punishedUuid);
 
             Inventory inv = Bukkit.createInventory(null, 27, ChatColor.GOLD + "Punish Player");
-            PunishmentChoiceItems.addPunishmentInvItems(inv);
+            // PunishmentTypeInventory.addPunishmentInvItems(inv);
             player.openInventory(inv);
             return true;
         }
         return false;
+         */
     }
 }
