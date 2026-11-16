@@ -82,8 +82,12 @@ public class ReportCommand implements CommandExecutor {
 
         // Send report
         if (args.length > 1) {
-            // TODO UPDATE REASON LOGIC
-            String reason = ChatColor.stripColor(args[1]).replace("~", " ");
+            StringBuilder reasonBuilder = new StringBuilder();
+            for (int i = 1; i < args.length; i++) {
+                if (i > 1) reasonBuilder.append(' ');
+                reasonBuilder.append(args[i]);
+            }
+            String reason = ChatColor.stripColor(reasonBuilder.toString());
 
             try {
                 plugin.getReports().create(player.getUniqueId(), reportedPlayer.getUniqueId(), reason);
