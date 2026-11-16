@@ -9,7 +9,7 @@ import dev.aidanbooth.superreport.configs.BanReasonsConfig;
 import dev.aidanbooth.superreport.configs.MessagesConfig;
 import dev.aidanbooth.superreport.configs.MuteReasonsConfig;
 import dev.aidanbooth.superreport.configs.ReportMenuConfig;
-//import dev.aidanbooth.superreport.pipeline.PipelineManager;
+import dev.aidanbooth.superreport.pipeline.PipelineManager;
 import dev.aidanbooth.superreport.punishmenthandler.*;
 import dev.aidanbooth.superreport.commands.report.ReportCommand;
 import dev.aidanbooth.superreport.commands.report.SetReportReason;
@@ -46,7 +46,7 @@ public class Main extends JavaPlugin {
     private PunishmentService punishmentService;
     //private ReportService reportService;
     private DiscordBot db;
-    //private PipelineManager pipelineManager;
+    private PipelineManager pipelineManager;
 
     @Override
     public void onEnable() {
@@ -59,8 +59,8 @@ public class Main extends JavaPlugin {
             return;
         }
         punishmentService = new PunishmentService();
-        //reportService = new ReportService(null);
-        //pipelineManager = new PipelineManager();
+        // reportService = new ReportService(null);
+        pipelineManager = new PipelineManager(this);
 
         registerListeners();
         registerCommands();
@@ -90,10 +90,10 @@ public class Main extends JavaPlugin {
         return punishments;
     }
     public PunishmentService getPunishmentService() { return punishmentService; };
-    //public ReportService getReportService() {return reportService; }
+    //public ReportService getReportService() { return reportService; }
 
     public DiscordBot getDiscordBot() { return db; }
-    //public PipelineManager getPipelineManager() { return pipelineManager; }
+    public PipelineManager getPipelineManager() { return pipelineManager; }
 
     public MessagesConfig getMessageConfig() { return mc; }
     public ReportMenuConfig getReportMenuConfig() { return rmc; }
@@ -163,6 +163,7 @@ public class Main extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ReasonListener(), this);
         getServer().getPluginManager().registerEvents(new BanOnJoin(), this);
         getServer().getPluginManager().registerEvents(new MuteOnTalk(), this);
+        getServer().getPluginManager().registerEvents(pipelineManager, this);
     }
     private void registerCommands() {
         getCommand("report").setExecutor(new ReportCommand());
