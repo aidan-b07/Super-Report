@@ -1,6 +1,7 @@
 package dev.aidanbooth.superreport.utils;
 
 import dev.aidanbooth.superreport.configs.ConfigFile;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class ConfigUtils {
@@ -9,5 +10,8 @@ public class ConfigUtils {
     }
     public static String BuildConfigMessage(FileConfiguration config, String path) {
         return String.join("\n", config.getStringList(path));
+    }
+    public static String Colour(String s) {
+        return ChatColor.translateAlternateColorCodes('&', s);
     }
 }
