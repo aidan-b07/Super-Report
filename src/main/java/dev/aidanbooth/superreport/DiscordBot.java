@@ -1,5 +1,10 @@
 package dev.aidanbooth.superreport;
 
+import dev.aidanbooth.superreport.database.model.Punishment;
+import dev.aidanbooth.superreport.database.model.Report;
+import dev.aidanbooth.superreport.utils.ConfigUtils;
+import dev.aidanbooth.superreport.utils.GetDuration;
+import dev.aidanbooth.superreport.utils.PlayerUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -7,10 +12,15 @@ import org.bukkit.OfflinePlayer;
 
 import java.awt.*;
 import java.sql.SQLException;
+import java.util.Date;
 
 public class DiscordBot {
     private final Main plugin = Main.getPlugin(Main.class);
-    private GetValues values = new GetValues();
+    private boolean enabled = false;
+
+    private String reportEmbedText;
+    private String banEmbedText;
+    private String muteEmbedText;
 
     public static String token;
 
@@ -34,7 +44,22 @@ public class DiscordBot {
 
     public static JDA bot;
 
-    public void setupBot() throws Exception {
+    public DiscordBot() {
+        if (!plugin.getConfig().getBoolean("DiscordBot.Enabled")) return;
+
+        try {
+            setupBot();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        loadTemplates();
+
+        enabled = true;
+    }
+
+    private void setupBot() throws Exception {
         if (plugin.getConfig().getBoolean("DiscordBot.Enabled")) {
 
             token = plugin.getConfig().getString("DiscordBot.Token");
@@ -60,16 +85,91 @@ public class DiscordBot {
             bot = JDABuilder.createDefault(token).build().awaitReady();
         }
     }
+    private void loadTemplates() {
+        this.reportEmbedText = ConfigUtils.BuildConfigMessage(plugin.getConfig(), "DiscordBot.ReportMessage.Layout.Description");
+        this.banEmbedText = ConfigUtils.BuildConfigMessage(plugin.getConfig(), "DiscordBot.BanMessage.Layout.Description");
+        this.muteEmbedText = ConfigUtils.BuildConfigMessage(plugin.getConfig(), "DiscordBot.MuteMessage.Layout.Description");
+    }
 
+    public void sendReportEmbed(Report report) {
+        if (!enabled) return;
+
+        EmbedBuilder embed = new EmbedBuilder();
+        embed.setDescription(reportEmbedText
+                .replace("{reported.name}", PlayerUtils.GetUsername(report.player()))
+                .replace("{reported.uuid}", report.player().toString())
+                .replace("{reported.ip}", "") // TODO GET IP
+                .replace("{reporter.name}", PlayerUtils.GetUsername(report.reporter()))
+                .replace("{reporter.uuid}", report.reporter().toString())
+                .replace("{reporter.ip}", "") // TODO GET IP
+                .replace("{reason}", report.reason()));
+        embed.setTitle(reportTitle);
+        embed.setAuthor(reportAuthor);
+        embed.setColor(Color.blue);
+        if (!reportThumbnail.equals("none")) embed.setThumbnail(reportThumbnail);
+
+        bot.getTextChannelById(reportChannelID).sendMessage(reportMessage).embed(embed.build()).queue();
+    }
+    public void sendPunishmentEmbed(Punishment punishment) {
+        if (!enabled) return;
+
+        EmbedBuilder embed = new EmbedBuilder();
+        String duration = punishment.isPermanent()
+                ? "Forever!"
+                : GetDuration.getDuration(new Date(), punishment.expiresAt());
+        String channelId;
+
+        // TODO Could switch these to individual EmbedTemplate classes
+        switch (punishment.type()) {
+            case BAN:
+                embed.setDescription(banEmbedText
+                        .replace("{banned.name}", PlayerUtils.GetUsername(punishment.player()))
+                        .replace("{banned.uuid}", punishment.player().toString())
+                        .replace("{banned.ip}", "") // TODO GET IP
+                        .replace("{punisher.name}", PlayerUtils.GetUsername(punishment.punisher()))
+                        .replace("{punisher.uuid}", punishment.punisher().toString())
+                        .replace("{punisher.ip}", "") // TODO GET IP
+                        .replace("{ban.reason}", punishment.reason())
+                        .replace("{ban.duration}", duration));
+                embed.setTitle(banTitle);
+                embed.setAuthor(banAuthor);
+                embed.setColor(Color.red);
+                if (!banThumbnail.equals("none")) embed.setThumbnail(banThumbnail);
+                channelId = banChannelID;
+                break;
+            case MUTE:
+                embed.setDescription(muteEmbedText
+                        .replace("{muted.name}", PlayerUtils.GetUsername(punishment.player()))
+                        .replace("{muted.uuid}", punishment.player().toString())
+                        .replace("{muted.ip}", "") // TODO GET IP
+                        .replace("{punisher.name}", PlayerUtils.GetUsername(punishment.punisher()))
+                        .replace("{punisher.uuid}", punishment.punisher().toString())
+                        .replace("{punisher.ip}", "") // TODO GET IP
+                        .replace("{mute.reason}", punishment.reason())
+                        .replace("{mute.duration}", duration));
+                embed.setTitle(muteTitle);
+                embed.setAuthor(muteAuthor);
+                embed.setColor(Color.GREEN);
+                if (!muteThumbnail.equals("none")) embed.setThumbnail(muteThumbnail);
+                channelId = muteChannelID;
+                break;
+            default:
+                return;
+        }
+
+        bot.getTextChannelById(channelId).sendMessage(reportMessage).embed(embed.build()).queue();
+    }
+
+    @Deprecated
     public void sendEmbed(OfflinePlayer reporter, OfflinePlayer reported, String reason) {
         if (plugin.getConfig().getBoolean("DiscordBot.Enabled")) {
             EmbedBuilder embed = new EmbedBuilder();
 
-            String description = "";
+            StringBuilder description = new StringBuilder();
             for (String line : plugin.getConfig().getStringList("DiscordBot.ReportMessage.Layout.Description")) {
-                description = description + line + "\n";
+                description.append(line).append("\n");
             }
-            embed.setDescription(description.replace("{reported.name}", reported.getName())
+            embed.setDescription(description.toString().replace("{reported.name}", reported.getName())
                     .replace("{reported.uuid}", reported.getUniqueId().toString())
                     .replace("{reported.ip}", getIP(reported))
                     .replace("{reporter.name}", reporter.getName())
@@ -86,6 +186,7 @@ public class DiscordBot {
             bot.getTextChannelById(reportChannelID).sendMessage(reportMessage).embed(embed.build()).queue();
         }
     }
+    @Deprecated
     public void sendBanEmbed(OfflinePlayer player, OfflinePlayer banner, String reason, String time) {
         if (plugin.getConfig().getBoolean("DiscordBot.Enabled")) {
             if (bot != null) {
@@ -116,6 +217,7 @@ public class DiscordBot {
             }
         }
     }
+    @Deprecated
     public void sendMuteEmbed(OfflinePlayer player, OfflinePlayer muter, String reason, String time) {
         if (plugin.getConfig().getBoolean("DiscordBot.Enabled")) {
             if (bot != null) {
@@ -146,6 +248,7 @@ public class DiscordBot {
             }
         }
     }
+
     public void sendStartupEmbed() {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setTitle(":white_check_mark: Bot Startup!");
@@ -156,7 +259,6 @@ public class DiscordBot {
         }
         bot.getTextChannelById(reportChannelID).sendMessage(reportMessage).embed(embed.build()).queue();
     }
-
     private String getIP(OfflinePlayer player) {
         try {
             return plugin.getPlayerData().findIp(player.getUniqueId()).orElse(null);

@@ -8,12 +8,6 @@ public class ConfigUtils {
         return BuildConfigMessage(config.config(), path);
     }
     public static String BuildConfigMessage(FileConfiguration config, String path) {
-        StringBuilder message = new StringBuilder();
-
-        for(String s : config.getStringList(path)) {
-            message.append(s);
-        }
-
-        return message.toString();
+        return String.join("\n", config.getStringList(path));
     }
 }
