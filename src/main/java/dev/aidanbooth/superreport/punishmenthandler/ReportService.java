@@ -6,7 +6,9 @@ import dev.aidanbooth.superreport.database.ReportRepository;
 import dev.aidanbooth.superreport.database.model.PlayerData;
 import dev.aidanbooth.superreport.database.model.Report;
 import dev.aidanbooth.superreport.pipeline.Pipeline;
+import dev.aidanbooth.superreport.pipeline.data.PunishmentDraft;
 import dev.aidanbooth.superreport.pipeline.data.ReportDraft;
+import dev.aidanbooth.superreport.pipeline.punishPipeline.PunishmentPipeline;
 import dev.aidanbooth.superreport.pipeline.reportPipeline.SelectReportReasonStep;
 import dev.aidanbooth.superreport.utils.ErrorCodes;
 import org.bukkit.Bukkit;
@@ -14,6 +16,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static dev.aidanbooth.superreport.utils.ConfigUtils.Colour;
 
@@ -22,6 +26,7 @@ public class ReportService {
     private final ReportRepository reports;
     private final PlayerDataRepository playerData;
     private final Pipeline<ReportDraft> reportPipeline;
+    private final Pipeline<PunishmentDraft> punishmentPipeline;
 
     private final String successMessage;
     private final String errorMessage;
@@ -32,7 +37,9 @@ public class ReportService {
         this.plugin = plugin;
         this.reports = reports;
         this.playerData = playerData;
+
         this.reportPipeline = new Pipeline<>(this::submit, new SelectReportReasonStep());
+        this.punishmentPipeline = new PunishmentPipeline(this::resolve, this::getReports);
 
         this.successMessage = Colour(plugin.getMessageConfig().config().getString("ReportCommand.ReportSuccessful"));
         this.errorMessage = Colour(plugin.getMessageConfig().config().getString("ReportCommand.ReportError"));
@@ -41,6 +48,11 @@ public class ReportService {
     public void openReportMenu(Player reporter, OfflinePlayer reported) {
         ReportDraft draft = new ReportDraft(reported.getUniqueId(), reporter.getUniqueId());
         plugin.getPipelineManager().start(reporter, reportPipeline, draft);
+    }
+    public void openReportsMenu(Player player) {
+        PunishmentDraft draft = new PunishmentDraft(player.getUniqueId());
+        draft.setShownReports(getReports());
+        plugin.getPipelineManager().start(player, punishmentPipeline, draft);
     }
 
     public void submit(ReportDraft draft) {
@@ -55,6 +67,19 @@ public class ReportService {
             plugin.getServer().getConsoleSender().sendMessage(ErrorCodes.getTemplate("001"));
             e.printStackTrace();
             if (reporter != null) reporter.sendMessage(errorMessage);
+        }
+    }
+    public void resolve(PunishmentDraft draft) {
+        if (draft.getAction() == PunishmentDraft.Action.PUNISH) {
+            plugin.getPunishmentService().punishPlayer(draft.build());
+        }
+
+        try {
+            // TODO Update to enums?
+            reports.archive(draft.getReportId(), draft.getResolver(), draft.getAction().toString());
+        } catch (SQLException e) {
+            // TODO Handle error
+            e.printStackTrace();
         }
     }
 
@@ -77,6 +102,15 @@ public class ReportService {
             return ReportCheck.ERROR;
         }
         return ReportCheck.ALLOWED;
+    }
+
+    public List<Report> getReports() {
+        try {
+            return reports.findAll();
+        } catch (SQLException e) {
+            logError("008", e);
+            return new ArrayList<>();
+        }
     }
 
     private void logError(String code, SQLException e) {

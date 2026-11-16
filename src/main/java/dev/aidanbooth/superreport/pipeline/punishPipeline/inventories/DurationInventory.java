@@ -1,15 +1,23 @@
-package dev.aidanbooth.superreport.commands.reports.timeinv;
+package dev.aidanbooth.superreport.pipeline.punishPipeline.inventories;
 
 import com.cryptomorin.xseries.XMaterial;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
 
-public class TimeInvItems {
-    public static void addItems(Inventory inv) {
+public class DurationInventory {
+    public Inventory create(InventoryHolder holder) {
+        Inventory inventory = Bukkit.createInventory(holder, 45, ChatColor.GOLD + "Select Time");
+        addItems(inventory);
+        return inventory;
+    }
+
+    private void addItems(Inventory inv) {
         ItemStack addMinute = XMaterial.GREEN_WOOL.parseItem();
         ItemMeta addMinuteMeta = addMinute.getItemMeta();
         addMinuteMeta.setDisplayName(ChatColor.GREEN + "" + ChatColor.BOLD + "+ 1 Minute");

@@ -1,43 +1,49 @@
-package dev.aidanbooth.superreport.commands.reports.controlpanel;
+package dev.aidanbooth.superreport.pipeline.punishPipeline.inventories;
 
 import com.cryptomorin.xseries.XMaterial;
 import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.database.model.PlayerData;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class ControlPanelItems {
+public class ControlPanelInventory {
     private Main plugin = Main.getPlugin(Main.class);
 
-    public void addControlPanelItems(Inventory inv, ItemStack item) throws SQLException {
-        String reporterUuid = ChatColor.stripColor(item.getItemMeta().getLore().get(2)).replace("Reporter UUID - ", "");
-        String reportedUuid = ChatColor.stripColor(item.getItemMeta().getLore().get(0)).replace("Reported UUID - ", "");
+    public Inventory create(InventoryHolder holder, UUID reporterUUID, UUID reportedUUID) {
+        Inventory controlPanelInv = Bukkit.createInventory(holder, 27, ChatColor.GOLD + "Control Panel");
 
-        Optional<PlayerData> reported = plugin.getPlayerData().find(UUID.fromString(reportedUuid));
-        if (reported.isPresent()) {
-            addReportedProfile(inv, item, reported.get(), true);
+        try {
+            Optional<PlayerData> reported = plugin.getPlayerData().find(reportedUUID);
+            reported.ifPresent(playerData -> addProfile(controlPanelInv, reportedUUID, playerData, true));
+
+            Optional<PlayerData> reporter = plugin.getPlayerData().find(reporterUUID);
+            reporter.ifPresent(playerData -> addProfile(controlPanelInv, reporterUUID, playerData, false));
+
+        } catch (SQLException e) {
+            // TODO Set error items
+            e.printStackTrace();
         }
 
-        Optional<PlayerData> reporter = plugin.getPlayerData().find(UUID.fromString(reporterUuid));
-        if (reporter.isPresent()) {
-            addReportedProfile(inv, item, reporter.get(), false);
-        }
+        addDismissItem(controlPanelInv);
+        addPunishmentItem(controlPanelInv);
+        // TODO Add this item when I can be bothered
+        // inv.setItem(13, item);
 
-        addDismissItem(inv);
-        addPunishmentItem(inv);
-        inv.setItem(13, item);
+        addFillItems(controlPanelInv);
 
-        addItems(inv);
-    } //Controls all the items
-    public void addReportedProfile(Inventory inv, ItemStack item, PlayerData data, Boolean red) {
+        return controlPanelInv;
+    }
+
+    public void addProfile(Inventory inv, UUID uuid, PlayerData data, Boolean red) {
         ItemStack reported;
         if(red) {
             reported = XMaterial.RED_WOOL.parseItem(); //Creates item
@@ -45,7 +51,7 @@ public class ControlPanelItems {
             reported = XMaterial.LIME_WOOL.parseItem();
         }
         ItemMeta reportedMeta = reported.getItemMeta();
-        List<String> reportedLore = item.getItemMeta().getLore(); //Gets item lore
+
                 /*
                 Lore(0) = Reported UUID
                 Lore(1) = Reporter Name
@@ -54,9 +60,9 @@ public class ControlPanelItems {
                 Lore(4) = Reason
                  */
 
-        reportedMeta.setDisplayName(ChatColor.GOLD + item.getItemMeta().getDisplayName().replace("Name - ", ChatColor.GOLD + "Reported - "));
+        reportedMeta.setDisplayName(ChatColor.GOLD + "Reported - " + Bukkit.getOfflinePlayer(uuid).getName());
         reportedMeta.setLore(Arrays.asList(
-                reportedLore.get(0),
+                String.valueOf(uuid),
                 ChatColor.GOLD + "Reports - " + ChatColor.GRAY + data.reports(),
                 ChatColor.GOLD + "Reported - " + ChatColor.GRAY + data.reported(),
                 ChatColor.GOLD + "Online - " + ChatColor.GRAY + data.online(),
@@ -69,6 +75,8 @@ public class ControlPanelItems {
             inv.setItem(16, reported);
         }
     } //Reported and reporter profile
+
+    // TODO Make item creator helper method in utils class
     public void addPunishmentItem(Inventory inv) {
         ItemStack punishment = XMaterial.DIAMOND_SWORD.parseItem();
         ItemMeta punishmentMeta = punishment.getItemMeta();
@@ -77,6 +85,7 @@ public class ControlPanelItems {
         punishment.setItemMeta(punishmentMeta);
         inv.setItem(12, punishment);
     } //Add punishment items
+
     public void addDismissItem(Inventory inv) {
         ItemStack dismiss = XMaterial.BARRIER.parseItem();
         ItemMeta dismissMeta = dismiss.getItemMeta();
@@ -87,7 +96,9 @@ public class ControlPanelItems {
         dismiss.setItemMeta(dismissMeta);
         inv.setItem(14, dismiss);
     } //Add dismiss items
-    public void addItems(Inventory inv) {
+
+    // TODO change this to helper method in utils class
+    public void addFillItems(Inventory inv) {
         ItemStack fillItem = XMaterial.GRAY_STAINED_GLASS_PANE.parseItem();
         ItemMeta fillItemMeta = fillItem.getItemMeta();
         fillItemMeta.setDisplayName(" ");
@@ -97,6 +108,6 @@ public class ControlPanelItems {
             if (inv.getItem(x) == null) {
                 inv.setItem(x, fillItem);
             }
-        } //Fill items
+        }
     } //Add fill items
 }

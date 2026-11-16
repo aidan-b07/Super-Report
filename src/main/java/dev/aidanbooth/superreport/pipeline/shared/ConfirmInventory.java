@@ -1,14 +1,22 @@
-package dev.aidanbooth.superreport.commands.reports.dismissinv;
+package dev.aidanbooth.superreport.pipeline.shared;
 
 import com.cryptomorin.xseries.XMaterial;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class DismissInvItems {
+public class ConfirmInventory {
+    public Inventory create(InventoryHolder holder, String inventoryName) {
+        Inventory inv = Bukkit.createInventory(holder, 45, inventoryName);
+        addItems(inv);
 
-    public static void addItems(Inventory inv) {
+        return inv;
+    }
+
+    private void addItems(Inventory inv) {
         ItemStack confim = XMaterial.GREEN_WOOL.parseItem();
         ItemMeta confirmMeta = confim.getItemMeta();
         confirmMeta.setDisplayName(ChatColor.GREEN + "" + ChatColor.BOLD + "Confirm");
@@ -18,7 +26,6 @@ public class DismissInvItems {
         ItemMeta cancelMeta = cancel.getItemMeta();
         cancelMeta.setDisplayName(ChatColor.RED + "" + ChatColor.BOLD + "Cancel");
         cancel.setItemMeta(cancelMeta);
-
 
         ItemStack fillItem = XMaterial.GRAY_STAINED_GLASS_PANE.parseItem();
         ItemMeta fillItemMeta = fillItem.getItemMeta();

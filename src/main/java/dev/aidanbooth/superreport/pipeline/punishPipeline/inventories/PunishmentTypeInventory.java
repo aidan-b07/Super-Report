@@ -1,15 +1,23 @@
-package dev.aidanbooth.superreport.commands.reports.punishments;
+package dev.aidanbooth.superreport.pipeline.punishPipeline.inventories;
 
 import com.cryptomorin.xseries.XMaterial;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
 
-public class PunishmentChoiceItems {
-    public static void addPunishmentInvItems(Inventory inv) {
+public class PunishmentTypeInventory {
+    public Inventory create(InventoryHolder holder) {
+        Inventory inv = Bukkit.createInventory(holder, 27, ChatColor.GOLD + "Punish Player");
+        addPunishmentInvItems(inv);
+        return inv;
+    }
+
+    private void addPunishmentInvItems(Inventory inv) {
         ItemStack ban = XMaterial.BARRIER.parseItem();
         ItemMeta banMeta = ban.getItemMeta();
         banMeta.setDisplayName(ChatColor.RED + "Ban");
