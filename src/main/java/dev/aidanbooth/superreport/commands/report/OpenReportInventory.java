@@ -17,10 +17,9 @@ import java.util.List;
 
 public class OpenReportInventory {
     private Main plugin = Main.getPlugin(Main.class);
-    private GetValues values = new GetValues();
 
     public void openInventory(Player player, OfflinePlayer reported) {
-        int size = values.getReportMenuSize(); //Size of inventory
+        int size = plugin.getReportMenuConfig().config().getInt("ReportMenu.Size"); //Size of inventory
         Inventory inv = Bukkit.createInventory(null, size, ChatColor.GOLD + "Report " + reported.getName()); //Creates inventory
 
         String fillItemMaterial = plugin.getReportMenuConfig().config().getString("ReportMenu.Items.Fill.Material"); //Get material from config
