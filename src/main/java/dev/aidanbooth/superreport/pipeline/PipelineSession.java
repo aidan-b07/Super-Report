@@ -7,6 +7,12 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.List;
+
+import static dev.aidanbooth.superreport.pipeline.PipelineStepResult.*;
+
 public class PipelineSession<T> implements InventoryHolder {
     private final Main plugin;
     private final PipelineManager manager;
@@ -14,7 +20,9 @@ public class PipelineSession<T> implements InventoryHolder {
     private final Pipeline<T> pipeline;
     private final T data;
 
-    private int currentStep = 0;
+    private PipelineStep<T> current;
+    private final Deque<PipelineStep<T>> history = new ArrayDeque<>();
+
     private volatile Inventory currentInventory; // read from the async chat thread
     private boolean active = true;
     private boolean busy = false; // a result is waiting to be applied next tick
@@ -25,6 +33,7 @@ public class PipelineSession<T> implements InventoryHolder {
         this.player = player;
         this.pipeline = pipeline;
         this.data = data;
+        this.current = pipeline.getSteps().get(0);
     }
 
     @Override
@@ -61,7 +70,7 @@ public class PipelineSession<T> implements InventoryHolder {
         if (!active || !closed.equals(currentInventory)) return;
         currentInventory = null;
         PipelineStepResult result = step().handleClose(player, data);
-        apply(result == PipelineStepResult.STAY ? PipelineStepResult.REFRESH : result);
+        apply(result == PipelineStepResult.STAY ? REFRESH : result);
     }
 
     /* Step progression */
@@ -75,20 +84,22 @@ public class PipelineSession<T> implements InventoryHolder {
             busy = false;
             if (!active) return;
 
-            switch (result) {
+            switch (result.action()) {
                 case REFRESH:
                     open();
                     break;
-                case NEXT:
-                    if (currentStep + 1 < pipeline.getSteps().size()) {
-                        currentStep++;
-                        open();
-                    } else {
-                        complete();
-                    }
+                case NEXT: {
+                    List<PipelineStep<T>> steps = pipeline.getSteps();
+                    int index = steps.indexOf(current);
+                    if (index + 1 < steps.size()) moveTo(steps.get(index + 1));
+                    else complete();
+                    break;
+                }
+                case GOTO:
+                    moveTo(pipeline.find(result.target()));
                     break;
                 case BACK:
-                    if (currentStep > 0) currentStep--;
+                    if (!history.isEmpty()) current = history.pop();
                     open();
                     break;
                 case COMPLETE:
@@ -99,6 +110,12 @@ public class PipelineSession<T> implements InventoryHolder {
                     break;
             }
         });
+    }
+
+    private void moveTo(PipelineStep<T> step) {
+        history.push(current);
+        current = step;
+        open();
     }
 
     private void complete() {
@@ -120,6 +137,6 @@ public class PipelineSession<T> implements InventoryHolder {
     }
 
     private PipelineStep<T> step() {
-        return pipeline.getSteps().get(currentStep);
+        return current;
     }
 }

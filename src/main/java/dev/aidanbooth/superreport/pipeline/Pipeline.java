@@ -19,6 +19,13 @@ public class Pipeline<T> {
         this.onComplete = onComplete;
     }
 
+    public PipelineStep<T> find(Class<?> type) {
+        for (PipelineStep<T> step : steps) {
+            if (type.isInstance(step)) return step;
+        }
+        throw new IllegalStateException(type.getSimpleName() + " is not part of this pipeline");
+    }
+
     List<PipelineStep<T>> getSteps() {
         return steps;
     }
