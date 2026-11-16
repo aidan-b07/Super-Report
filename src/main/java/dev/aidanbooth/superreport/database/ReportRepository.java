@@ -53,7 +53,7 @@ public final class ReportRepository {
             Database.update(conn,
                     "INSERT INTO " + Tables.REPORTS_INACTIVE + " (`UUID`, `REPORTER_UUID`, `REPORTED_UUID`, `RESOLVER_UUID`,"
                             + " `DATE_TIME_REPORTED`, `DATE_TIME_RESOLVED`, `REASON`, `PUNISHMENT`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                    report.id().toString(), report.reporter().toString(), report.reported().toString(),
+                    report.id().toString(), report.reporter().toString(), report.player().toString(),
                     resolver.toString(), report.reportedAt(), Timestamps.now(), report.reason(), outcome);
             Database.update(conn, "DELETE FROM " + Tables.REPORTS_ACTIVE + " WHERE `UUID` = ?", id.toString());
             return true;
