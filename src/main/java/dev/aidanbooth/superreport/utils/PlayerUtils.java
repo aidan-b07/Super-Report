@@ -7,6 +7,8 @@ import java.util.UUID;
 public class PlayerUtils {
 
     public static String GetUsername(UUID uuid) {
-        return Bukkit.getOfflinePlayer(uuid).getName();
+        if (uuid == null) return "Unknown";
+        String name = Bukkit.getOfflinePlayer(uuid).getName();
+        return name == null ? "Unknown" : name;
     }
 }

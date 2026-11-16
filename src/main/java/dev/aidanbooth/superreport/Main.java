@@ -9,8 +9,8 @@ import dev.aidanbooth.superreport.configs.BanReasonsConfig;
 import dev.aidanbooth.superreport.configs.MessagesConfig;
 import dev.aidanbooth.superreport.configs.MuteReasonsConfig;
 import dev.aidanbooth.superreport.configs.ReportMenuConfig;
-import dev.aidanbooth.superreport.punishmenthandler.BanRunnable;
-import dev.aidanbooth.superreport.punishmenthandler.MuteOnTalk;
+//import dev.aidanbooth.superreport.pipeline.PipelineManager;
+import dev.aidanbooth.superreport.punishmenthandler.*;
 import dev.aidanbooth.superreport.commands.report.ReportCommand;
 import dev.aidanbooth.superreport.commands.report.SetReportReason;
 import dev.aidanbooth.superreport.commands.reports.dismissinv.DismissListener;
@@ -22,7 +22,6 @@ import dev.aidanbooth.superreport.database.Database;
 import dev.aidanbooth.superreport.database.PlayerDataRepository;
 import dev.aidanbooth.superreport.database.PunishmentRepository;
 import dev.aidanbooth.superreport.database.ReportRepository;
-import dev.aidanbooth.superreport.punishmenthandler.BanOnJoin;
 import dev.aidanbooth.superreport.utils.ErrorCodes;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -37,24 +36,21 @@ public class Main extends JavaPlugin {
     private MuteReasonsConfig mrc;
     private ReportMenuConfig rmc;
     private BanRunnable br;
-    private DiscordBot db;
 
     private Database database;
+    // TODO: Remove repo access here and route everything through the services
     private PlayerDataRepository playerData;
     private ReportRepository reports;
     private PunishmentRepository punishments;
 
+    private PunishmentService punishmentService;
+    //private ReportService reportService;
+    private DiscordBot db;
+    //private PipelineManager pipelineManager;
+
     @Override
     public void onEnable() {
-        getServer().getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&9&l------------[Super-Report]------------"));
-        getServer().getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&',"&a          Attempting to Launch           "));
-        getServer().getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&',   "&a               "));
-        getServer().getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&',"&a     Join the discord for extra help            "));
-        getServer().getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&',"&a       https://discord.gg/3wqbfmX74P   "));
-        getServer().getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&9&l-----------------------------------"));
-
-        saveDefaultConfig();
-
+        sendStartupMessage();
         setupConfigs();
 
         if (!setupDatabase()) {
@@ -62,37 +58,17 @@ public class Main extends JavaPlugin {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+        punishmentService = new PunishmentService();
+        //reportService = new ReportService(null);
+        //pipelineManager = new PipelineManager();
 
-        getServer().getPluginManager().registerEvents(new AddPlayerdata(), this);
-        getServer().getPluginManager().registerEvents(new SetReportReason(), this);
-        getServer().getPluginManager().registerEvents(new GetClickedReport(), this);
-        getServer().getPluginManager().registerEvents(new OutcomeListener(), this);
-        getServer().getPluginManager().registerEvents(new DismissListener(), this);
-        getServer().getPluginManager().registerEvents(new PunishmentListener(), this);
-        getServer().getPluginManager().registerEvents(new TimeListener(), this);
-        getServer().getPluginManager().registerEvents(new ReasonListener(), this);
-        getServer().getPluginManager().registerEvents(new BanOnJoin(), this);
-        getServer().getPluginManager().registerEvents(new MuteOnTalk(), this);
+        registerListeners();
+        registerCommands();
 
-        getCommand("report").setExecutor(new ReportCommand());
-        getCommand("reports").setExecutor(new ReportsCommand());
-        getCommand("unban").setExecutor(new UnbanCommand());
-        getCommand("unmute").setExecutor(new UnmuteCommand());
-        getCommand("punish").setExecutor(new PunishCommand());
+        // Other servers sharing the database can ban players here too
+        if(getConfig().getBoolean("MySQL.MySqlEnabled")) br = new BanRunnable();
+        db = new DiscordBot();
 
-        if (getConfig().getBoolean("MySQL.MySqlEnabled")) {
-            // Other servers sharing the database can ban players here too
-            br = new BanRunnable();
-            br.startBanRunnable();
-        }
-        if(getConfig().getBoolean("DiscordBot.Enabled")) {
-            db = new DiscordBot();
-            try {
-                db.setupBot();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
         getServer().getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&9&lSuper-Report &amade by &9&lSuperbility &ahas been loaded successfully!"));
     }
 
@@ -103,6 +79,47 @@ public class Main extends JavaPlugin {
         }
     }
 
+    // Getters
+    public PlayerDataRepository getPlayerData() {
+        return playerData;
+    }
+    public ReportRepository getReports() {
+        return reports;
+    }
+    public PunishmentRepository getPunishments() {
+        return punishments;
+    }
+    public PunishmentService getPunishmentService() { return punishmentService; };
+    //public ReportService getReportService() {return reportService; }
+
+    public DiscordBot getDiscordBot() { return db; }
+    //public PipelineManager getPipelineManager() { return pipelineManager; }
+
+    public MessagesConfig getMessageConfig() { return mc; }
+    public ReportMenuConfig getReportMenuConfig() { return rmc; }
+    public BanReasonsConfig getBanReasonConfig() { return brc; }
+    public MuteReasonsConfig getMuteReasonConfig() { return mrc; }
+
+
+    // Methods
+    private void sendStartupMessage() {
+        getServer().getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&',
+                "&9&l------------[Super-Report]------------\n" +
+                "&a          Attempting to Launch           \n" +
+                "&a               \n" +
+                "&a     Join the discord for extra help            \n" +
+                "&a       https://discord.gg/3wqbfmX74P   \n" +
+                "&9&l-----------------------------------"));
+
+    }
+    private void setupConfigs() {
+        saveDefaultConfig();
+
+        brc = new BanReasonsConfig();
+        mc = new MessagesConfig();
+        mrc = new MuteReasonsConfig();
+        rmc = new ReportMenuConfig();
+    }
     private boolean setupDatabase() {
         if (getConfig().getBoolean("MySQL.MySqlEnabled")) {
             database = Database.mysql(
@@ -135,29 +152,23 @@ public class Main extends JavaPlugin {
         }
         return true;
     }
-
-    public PlayerDataRepository getPlayerData() {
-        return playerData;
+    private void registerListeners() {
+        getServer().getPluginManager().registerEvents(new AddPlayerdata(), this);
+        getServer().getPluginManager().registerEvents(new SetReportReason(), this);
+        getServer().getPluginManager().registerEvents(new GetClickedReport(), this);
+        getServer().getPluginManager().registerEvents(new OutcomeListener(), this);
+        getServer().getPluginManager().registerEvents(new DismissListener(), this);
+        getServer().getPluginManager().registerEvents(new PunishmentListener(), this);
+        getServer().getPluginManager().registerEvents(new TimeListener(), this);
+        getServer().getPluginManager().registerEvents(new ReasonListener(), this);
+        getServer().getPluginManager().registerEvents(new BanOnJoin(), this);
+        getServer().getPluginManager().registerEvents(new MuteOnTalk(), this);
     }
-
-    public ReportRepository getReports() {
-        return reports;
-    }
-
-    public PunishmentRepository getPunishments() {
-        return punishments;
-    }
-    private void setupConfigs() {
-        brc = new BanReasonsConfig();
-        brc.setup();
-
-        mc = new MessagesConfig();
-        mc.setup();
-
-        mrc = new MuteReasonsConfig();
-        mrc.setup();
-
-        rmc = new ReportMenuConfig();
-        rmc.setup();
+    private void registerCommands() {
+        getCommand("report").setExecutor(new ReportCommand());
+        getCommand("reports").setExecutor(new ReportsCommand());
+        getCommand("unban").setExecutor(new UnbanCommand());
+        getCommand("unmute").setExecutor(new UnmuteCommand());
+        getCommand("punish").setExecutor(new PunishCommand());
     }
 }

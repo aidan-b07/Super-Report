@@ -35,20 +35,10 @@ public class MuteOnTalk implements Listener {
                 plugin.getPunishments().archive(PunishmentType.MUTE, player.getUniqueId());
                 return;
             }
-            e.setCancelled(true);
-            player.sendMessage(muteMessage(mute.get()));
+
+            plugin.getPunishmentService().executeMuteMessage(e, mute.get());
         } catch (SQLException o) {
             o.printStackTrace();
         }
-    }
-
-    private String muteMessage(Punishment mute) {
-        String message = KickPlayer.joinLines(mc.getPunishmentsCfg().getStringList(
-                mute.isPermanent() ? "PermanentMuteMessage" : "TemporaryMuteMessage"));
-        message = message.replace("{reason}", mute.reason()).replace("{muter}", KickPlayer.nameOf(mute.punisher()));
-        if (!mute.isPermanent()) {
-            message = message.replace("{time}", GetDuration.getDuration(new Date(), mute.expiresAt()));
-        }
-        return message;
     }
 }

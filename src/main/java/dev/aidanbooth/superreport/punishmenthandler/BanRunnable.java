@@ -10,12 +10,11 @@ import java.util.List;
 import java.util.UUID;
 
 public class BanRunnable {
+    private final Main plugin = Main.getPlugin(Main.class);
+
     private static final long INTERVAL_TICKS = 200;
 
-    private final Main plugin = Main.getPlugin(Main.class);
-    private final KickPlayer kickPlayer = new KickPlayer();
-
-    public void startBanRunnable() {
+    public BanRunnable() {
         plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, this::checkNewBans, INTERVAL_TICKS, INTERVAL_TICKS);
     }
 
@@ -32,7 +31,7 @@ public class BanRunnable {
             plugin.getServer().getScheduler().runTask(plugin, () -> {
                 Player player = plugin.getServer().getPlayer(uuid);
                 if (player != null) {
-                    kickPlayer.kick(player);
+                    plugin.getPunishmentService().executeKick(player);
                 }
             });
             // Leave the flag set for one more cycle so other servers sharing the database see it too

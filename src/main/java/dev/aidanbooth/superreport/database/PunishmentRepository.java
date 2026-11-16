@@ -22,8 +22,7 @@ public final class PunishmentRepository {
         this.database = database;
     }
 
-    public void add(PunishmentType type, UUID player, String reason, UUID punisher, int durationSeconds) throws SQLException {
-        String expires = durationSeconds == PERMANENT ? Timestamps.PERMANENT : Timestamps.secondsFromNow(durationSeconds);
+    public void add(PunishmentType type, UUID player, String reason, UUID punisher, String expires) throws SQLException {
         database.transaction(conn -> {
             Database.update(conn, "INSERT INTO " + type.table()
                             + " (`UUID`, `DATE_TIME_LIFTED`, `REASON`, `PUNISHER_UUID`, `NEW`) VALUES (?, ?, ?, ?, ?)",
@@ -32,6 +31,14 @@ public final class PunishmentRepository {
                     + type.countColumn() + "` + 1 WHERE `UUID` = ?", player.toString());
             return null;
         });
+    }
+    public void add(PunishmentType type, UUID player, String reason, UUID punisher, int durationSeconds) throws SQLException {
+        String expires = durationSeconds == PERMANENT ? Timestamps.PERMANENT : Timestamps.secondsFromNow(durationSeconds);
+        add(type, player, reason, punisher, expires);
+    }
+    public void add(PunishmentType type, UUID player, String reason, UUID punisher, Timestamp timestamp) throws SQLException {
+        String expires = timestamp == null ? Timestamps.PERMANENT : timestamp.toString();
+        add(type, player, reason, punisher, expires);
     }
 
     public Optional<Punishment> find(PunishmentType type, UUID player) throws SQLException {

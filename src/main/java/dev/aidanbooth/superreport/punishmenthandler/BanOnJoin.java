@@ -14,16 +14,13 @@ import java.util.Optional;
 
 public class BanOnJoin implements Listener {
     private final Main plugin = Main.getPlugin(Main.class);
-    private final KickPlayer kickPlayer = new KickPlayer();
 
     @EventHandler
     public void onJoin(PlayerLoginEvent e) {
         Player player = e.getPlayer();
         try {
             Optional<Punishment> ban = plugin.getPunishments().find(PunishmentType.BAN, player.getUniqueId());
-            if (!ban.isPresent()) {
-                return;
-            }
+            if (!ban.isPresent()) return;
             if (player.hasPermission("superreport.bypass.ban")) {
                 player.sendMessage(ChatColor.RED + "It seems you have been banned but can bypass!");
                 return;
@@ -32,7 +29,8 @@ public class BanOnJoin implements Listener {
                 plugin.getPunishments().archive(PunishmentType.BAN, player.getUniqueId());
                 return;
             }
-            e.disallow(PlayerLoginEvent.Result.KICK_OTHER, kickPlayer.banMessage(ban.get()));
+
+            plugin.getPunishmentService().executeKick(e, ban.get());
         } catch (SQLException o) {
             o.printStackTrace();
         }
