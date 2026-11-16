@@ -1,4 +1,4 @@
-package dev.aidanbooth.superreport.commands.report;
+package dev.aidanbooth.superreport.pipeline.reportPipeline.inventories;
 
 import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.utils.ConfigMaterials;
@@ -13,7 +13,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OpenReportInventory {
+public class ReportInventory {
     private Main plugin = Main.getPlugin(Main.class);
 
     public Inventory create(InventoryHolder holder, OfflinePlayer reported) {

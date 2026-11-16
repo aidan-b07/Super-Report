@@ -1,7 +1,7 @@
 package dev.aidanbooth.superreport.pipeline.reportPipeline;
 
 import dev.aidanbooth.superreport.Main;
-import dev.aidanbooth.superreport.commands.report.OpenReportInventory;
+import dev.aidanbooth.superreport.pipeline.reportPipeline.inventories.ReportInventory;
 import dev.aidanbooth.superreport.pipeline.PipelineStep;
 import dev.aidanbooth.superreport.pipeline.PipelineStepResult;
 import dev.aidanbooth.superreport.pipeline.data.ReportDraft;
@@ -15,7 +15,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class SelectReportReasonStep implements PipelineStep<ReportDraft> {
     private Main plugin = Main.getPlugin(Main.class);
-    private final OpenReportInventory reportMenu = new OpenReportInventory();
+    private final ReportInventory reportMenu = new ReportInventory();
 
     @Override
     public Inventory open(InventoryHolder holder, Player player, ReportDraft data) {
