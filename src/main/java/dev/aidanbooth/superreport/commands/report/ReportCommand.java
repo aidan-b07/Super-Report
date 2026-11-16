@@ -5,6 +5,8 @@ import dev.aidanbooth.superreport.DiscordBot;
 import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.database.model.PlayerData;
+import dev.aidanbooth.superreport.pipeline.Pipeline;
+import dev.aidanbooth.superreport.pipeline.data.ReportDraft;
 import dev.aidanbooth.superreport.utils.ErrorCodes;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -16,11 +18,12 @@ import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
 
+import static dev.aidanbooth.superreport.punishmenthandler.ReportService.ReportCheck.*;
+
 public class ReportCommand implements CommandExecutor {
     private Main plugin = Main.getPlugin(Main.class);
 
     private GetValues values = new GetValues();
-    private OpenReportInventory openReportInventory = new OpenReportInventory();
 
     private final String usageMessage;
     private final String playerNotOnlineMessage;
@@ -60,55 +63,39 @@ public class ReportCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        OfflinePlayer reportedPlayer = Bukkit.getPlayer(args[0]);
+        Player reportedPlayer = Bukkit.getPlayer(args[0]);
 
-        // Already reported
-        if (alreadyReported(player, reportedPlayer)) {
-            player.sendMessage(reportExistsMessage);
-            return true;
+        switch (plugin.getReportService().canReport(player, reportedPlayer)) {
+            case NOT_ONLINE:
+                player.sendMessage(playerNotOnlineMessage.replace("{player}", args[0]));
+                return true;
+            case SELF_REPORT:
+                player.sendMessage(selfReportMessage);
+                return true;
+            case ALREADY_REPORTED:
+                player.sendMessage(reportExistsMessage);
+                return true;
+            case ERROR:
+                player.sendMessage(reportErrorMessage);
+                return true;
         }
-        // Self-report
-        if (player.getName().equals(reportedPlayer.getName())) {
-            player.sendMessage(playerNotOnlineMessage.replace("{player}", reportedPlayer.getName())); //Sends player not online message
-            return true;
-        }
-        // Player offline
-        if (!isOnline(reportedPlayer, player)) {
-            player.sendMessage(playerNotOnlineMessage.replace("{player}", reportedPlayer.getName())); //Sends player not online message
-            return true;
-        }
-
         /* Command accepted */
 
-        // Send report
+        // Send report straight from the command
         if (args.length > 1) {
             StringBuilder reasonBuilder = new StringBuilder();
             for (int i = 1; i < args.length; i++) {
                 if (i > 1) reasonBuilder.append(' ');
                 reasonBuilder.append(args[i]);
             }
-            String reason = ChatColor.stripColor(reasonBuilder.toString());
-
-            try {
-                plugin.getReports().create(player.getUniqueId(), reportedPlayer.getUniqueId(), reason);
-                plugin.getPlayerData().incrementReports(player.getUniqueId());
-                plugin.getPlayerData().incrementReported(reportedPlayer.getUniqueId());
-            } catch (SQLException o) {
-                logError("001", o);
-                reportError(player);
-                return true;
-            }
-
-            plugin.getDiscordBot().sendEmbed(player, reportedPlayer, reason);
-
-            player.closeInventory();
-            player.sendMessage(reportSuccessfulMessage);
+            ReportDraft draft = new ReportDraft(reportedPlayer.getUniqueId(), player.getUniqueId());
+            draft.setReason(ChatColor.stripColor(reasonBuilder.toString()));
+            plugin.getReportService().submit(draft);
             return true;
         }
 
-        // Open inventory
-        openReportInventory.openInventory(player, reportedPlayer);
-
+        // Pick a reason from the menu
+        plugin.getReportService().openReportMenu(player, reportedPlayer);
         return true;
     }
     private boolean alreadyReported(Player reporter, OfflinePlayer reported) {

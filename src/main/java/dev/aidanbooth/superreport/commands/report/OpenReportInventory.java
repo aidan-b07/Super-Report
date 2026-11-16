@@ -1,14 +1,12 @@
 package dev.aidanbooth.superreport.commands.report;
 
-import dev.aidanbooth.superreport.configs.ReportMenuConfig;
-import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.utils.ConfigMaterials;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -18,9 +16,9 @@ import java.util.List;
 public class OpenReportInventory {
     private Main plugin = Main.getPlugin(Main.class);
 
-    public void openInventory(Player player, OfflinePlayer reported) {
+    public Inventory create(InventoryHolder holder, OfflinePlayer reported) {
         int size = plugin.getReportMenuConfig().config().getInt("ReportMenu.Size"); //Size of inventory
-        Inventory inv = Bukkit.createInventory(null, size, ChatColor.GOLD + "Report " + reported.getName()); //Creates inventory
+        Inventory inv = Bukkit.createInventory(holder, size, ChatColor.GOLD + "Report " + reported.getName()); //Creates inventory
 
         String fillItemMaterial = plugin.getReportMenuConfig().config().getString("ReportMenu.Items.Fill.Material"); //Get material from config
         ItemStack fillItem = ConfigMaterials.get(fillItemMaterial, "ReportMenu.yml > ReportMenu.Items.Fill.Material").parseItem(); //Set material
@@ -36,7 +34,7 @@ public class OpenReportInventory {
 
         addConfigItems(inv, reported); //Adds other items
 
-        player.openInventory(inv); //Opens inventory
+        return inv;
     }
 
     private void addConfigItems(Inventory reportInv, OfflinePlayer reported) {

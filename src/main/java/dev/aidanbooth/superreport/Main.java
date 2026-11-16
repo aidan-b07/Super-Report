@@ -12,7 +12,6 @@ import dev.aidanbooth.superreport.configs.ReportMenuConfig;
 import dev.aidanbooth.superreport.pipeline.PipelineManager;
 import dev.aidanbooth.superreport.punishmenthandler.*;
 import dev.aidanbooth.superreport.commands.report.ReportCommand;
-import dev.aidanbooth.superreport.commands.report.SetReportReason;
 import dev.aidanbooth.superreport.commands.reports.dismissinv.DismissListener;
 import dev.aidanbooth.superreport.commands.reports.GetClickedReport;
 import dev.aidanbooth.superreport.commands.reports.punishments.PunishmentListener;
@@ -44,7 +43,7 @@ public class Main extends JavaPlugin {
     private PunishmentRepository punishments;
 
     private PunishmentService punishmentService;
-    //private ReportService reportService;
+    private ReportService reportService;
     private DiscordBot db;
     private PipelineManager pipelineManager;
 
@@ -59,7 +58,7 @@ public class Main extends JavaPlugin {
             return;
         }
         punishmentService = new PunishmentService();
-        // reportService = new ReportService(null);
+        reportService = new ReportService(this, reports, playerData);
         pipelineManager = new PipelineManager(this);
 
         registerListeners();
@@ -90,7 +89,7 @@ public class Main extends JavaPlugin {
         return punishments;
     }
     public PunishmentService getPunishmentService() { return punishmentService; };
-    //public ReportService getReportService() { return reportService; }
+    public ReportService getReportService() { return reportService; }
 
     public DiscordBot getDiscordBot() { return db; }
     public PipelineManager getPipelineManager() { return pipelineManager; }
@@ -154,7 +153,6 @@ public class Main extends JavaPlugin {
     }
     private void registerListeners() {
         getServer().getPluginManager().registerEvents(new AddPlayerdata(), this);
-        getServer().getPluginManager().registerEvents(new SetReportReason(), this);
         getServer().getPluginManager().registerEvents(new GetClickedReport(), this);
         getServer().getPluginManager().registerEvents(new OutcomeListener(), this);
         getServer().getPluginManager().registerEvents(new DismissListener(), this);
