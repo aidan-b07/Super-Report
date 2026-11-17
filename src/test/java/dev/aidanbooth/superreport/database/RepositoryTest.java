@@ -174,6 +174,27 @@ class RepositoryTest {
     }
 
     @Test
+    void findsExpiredPunishmentsStillShownOnDiscord() throws SQLException {
+        long now = System.currentTimeMillis();
+        Punishment expired = Punishment.issue(PunishmentType.BAN, bob, "Hacking", staff, now - 1000, null, "lobby");
+        Punishment running = Punishment.issue(PunishmentType.BAN, alice, "Hacking", staff, now + 60000, null, "lobby");
+        Punishment expiredNoMessage = Punishment.issue(PunishmentType.MUTE, bob, "Spam", staff, now - 1000, null, "lobby");
+        punishments.add(expired);
+        punishments.add(running);
+        punishments.add(expiredNoMessage);
+        messages.save(DiscordMessageRepository.PUNISHMENT, expired.id(), 1L, 2L);
+        messages.save(DiscordMessageRepository.PUNISHMENT, running.id(), 1L, 3L);
+
+        List<Punishment> found = punishments.findExpiredWithDiscordMessage();
+        assertEquals(1, found.size());
+        assertEquals(expired.id(), found.get(0).id());
+
+        // Once its message is updated it's forgotten, so it isn't found again
+        messages.delete(DiscordMessageRepository.PUNISHMENT, expired.id());
+        assertTrue(punishments.findExpiredWithDiscordMessage().isEmpty());
+    }
+
+    @Test
     void newBansAreNotifiedOnce() throws SQLException {
         Punishment ban = Punishment.issue(PunishmentType.BAN, bob, "Hacking", staff, null, null, "lobby");
         punishments.add(ban);

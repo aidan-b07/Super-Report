@@ -71,7 +71,7 @@ public class PunishmentService {
             e.printStackTrace();
             return LiftResult.ERROR;
         }
-        for (Punishment punishment : lifted) plugin.getDiscordBot().markPunishmentLifted(punishment);
+        for (Punishment punishment : lifted) plugin.getDiscordBot().markPunishmentEnded(punishment);
         return lifted.isEmpty() ? LiftResult.NOT_PUNISHED : LiftResult.LIFTED;
     }
 

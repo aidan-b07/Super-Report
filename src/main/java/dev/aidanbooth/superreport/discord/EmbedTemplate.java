@@ -73,31 +73,40 @@ public final class EmbedTemplate {
     }
 
     public MessageEmbed build(Map<String, String> placeholders) {
-        return build(placeholders, null, null);
+        return buildBase(placeholders);
     }
 
-    // The same embed recoloured, with a Status field added at the end. Used when a report or punishment is dealt with
-    public MessageEmbed build(Map<String, String> placeholders, Color colourOverride, String status) {
-        MessageEmbed base = buildBase(placeholders);
-        if (status == null) return base;
-        EmbedBuilder embed = new EmbedBuilder(base);
-        if (colourOverride != null) embed.setColor(colourOverride);
-        embed.addField("Status", cut(status, MessageEmbed.VALUE_MAX_LENGTH), false);
+    // The embed once its report or punishment is over: recoloured, with the new {status}.
+    // A layout without {status} anywhere (older configs) gets it as a field at the end instead
+    public MessageEmbed buildClosed(Map<String, String> placeholders, Color colour) {
+        EmbedBuilder embed = new EmbedBuilder(buildBase(placeholders)).setColor(colour);
+        String status = placeholders.get("status");
+        if (!usesStatus() && status != null) {
+            embed.addField("Status", cut(status, MessageEmbed.VALUE_MAX_LENGTH), false);
+        }
         return embed.build();
+    }
+
+    private boolean usesStatus() {
+        if (description.contains("{status}") || title.contains("{status}")) return true;
+        for (Field field : fields) {
+            if (field.value.contains("{status}") || field.name.contains("{status}")) return true;
+        }
+        return false;
     }
 
     private MessageEmbed buildBase(Map<String, String> placeholders) {
         EmbedBuilder embed = new EmbedBuilder().setColor(colour);
-        if (!author.isEmpty()) embed.setAuthor(fill(author, placeholders), null, fill(authorIcon, placeholders));
+        if (!author.isEmpty()) embed.setAuthor(fill(author, placeholders), null, url(fill(authorIcon, placeholders)));
         if (!title.isEmpty()) embed.setTitle(cut(fill(title, placeholders), MessageEmbed.TITLE_MAX_LENGTH));
-        if (thumbnail != null) embed.setThumbnail(fill(thumbnail, placeholders));
+        if (thumbnail != null) embed.setThumbnail(url(fill(thumbnail, placeholders)));
         if (!description.isEmpty()) embed.setDescription(fill(description, placeholders));
         for (Field field : fields) {
             String value = fill(field.value, placeholders);
             // Discord refuses fields with an empty value
             embed.addField(fill(field.name, placeholders), value.trim().isEmpty() ? "-" : cut(value, MessageEmbed.VALUE_MAX_LENGTH), field.inline);
         }
-        if (!footer.isEmpty()) embed.setFooter(fill(footer, placeholders), fill(footerIcon, placeholders));
+        if (!footer.isEmpty()) embed.setFooter(fill(footer, placeholders), url(fill(footerIcon, placeholders)));
         if (timestamp) embed.setTimestamp(Instant.now());
         return embed.build();
     }
@@ -108,6 +117,11 @@ public final class EmbedTemplate {
             text = text.replace("{" + entry.getKey() + "}", entry.getValue());
         }
         return text;
+    }
+
+    // Discord refuses the whole message over one bad image link, so anything that isn't a web address is left out
+    private static String url(String value) {
+        return value != null && (value.startsWith("https://") || value.startsWith("http://")) ? value : null;
     }
 
     private static String join(List<?> lines) {

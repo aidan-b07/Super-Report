@@ -32,15 +32,18 @@ class EmbedTemplateTest {
         placeholders.put("ban.expires", "<t:1700000000:f>");
         placeholders.put("ban.reason", "Hacking");
         placeholders.put("server", "Test Server");
+        placeholders.put("status", "`BANNED`");
 
         MessageEmbed embed = ban.build(placeholders);
 
         assertEquals("Steve has been banned", embed.getTitle());
         assertEquals("Banned by Notch", embed.getAuthor().getName());
         assertEquals("https://mc-heads.net/avatar/steve/128", embed.getThumbnail().getUrl());
-        assertEquals(4, embed.getFields().size());
-        assertEquals("Hacking", embed.getFields().get(3).getValue());
-        assertFalse(embed.getFields().get(3).isInline());
+        assertEquals(5, embed.getFields().size());
+        assertEquals("Status", embed.getFields().get(0).getName());
+        assertEquals("`BANNED`", embed.getFields().get(0).getValue());
+        assertEquals("Hacking", embed.getFields().get(4).getValue());
+        assertFalse(embed.getFields().get(4).isInline());
         assertEquals("Test Server | Super-Report", embed.getFooter().getText());
         assertNotNull(embed.getTimestamp());
         assertEquals(0xE74C3C, embed.getColorRaw() & 0xFFFFFF); // the raw value also carries alpha
@@ -59,6 +62,33 @@ class EmbedTemplateTest {
         assertEquals("**Reported** - Steve", embed.getDescription());
         assertTrue(embed.getFields().isEmpty());
         assertEquals(null, embed.getThumbnail());
+    }
+
+    @Test
+    void closedEmbedsAreRecolouredWithTheNewStatus() {
+        EmbedTemplate ban = new EmbedTemplate(defaultConfig().getConfigurationSection("DiscordBot.BanMessage"));
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("status", "`LIFTED` by Notch");
+
+        MessageEmbed embed = ban.buildClosed(placeholders, new java.awt.Color(0x95A5A6));
+
+        assertEquals(0x95A5A6, embed.getColorRaw() & 0xFFFFFF);
+        assertEquals("`LIFTED` by Notch", embed.getFields().get(0).getValue());
+        assertEquals(5, embed.getFields().size());
+    }
+
+    @Test
+    void anOldLayoutGetsTheStatusAsAnExtraField() throws InvalidConfigurationException {
+        YamlConfiguration old = new YamlConfiguration();
+        old.loadFromString("Layout:\n  Title: Player Banned\n  Description:\n  - '{banned.name}'\n");
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("banned.name", "Steve");
+        placeholders.put("status", "`EXPIRED`");
+
+        assertTrue(new EmbedTemplate(old).build(placeholders).getFields().isEmpty());
+        MessageEmbed closed = new EmbedTemplate(old).buildClosed(placeholders, java.awt.Color.GRAY);
+        assertEquals("Status", closed.getFields().get(0).getName());
+        assertEquals("`EXPIRED`", closed.getFields().get(0).getValue());
     }
 
     @Test

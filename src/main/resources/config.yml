@@ -55,6 +55,9 @@ DiscordBot:
       Description:
         - "A player has sent a report. Review it in-game with `/reports`."
       Fields:
+        - Name: "Status"
+          Value: "{status}"
+          Inline: false
         - Name: "Reported Player"
           Value: "{reported.name}"
           Inline: true
@@ -83,6 +86,9 @@ DiscordBot:
       Title: "{banned.name} has been banned"
       Thumbnail: "{banned.head}"
       Fields:
+        - Name: "Status"
+          Value: "{status}"
+          Inline: false
         - Name: "Player"
           Value: "{banned.name}"
           Inline: true
@@ -111,6 +117,9 @@ DiscordBot:
       Title: "{muted.name} has been muted"
       Thumbnail: "{muted.head}"
       Fields:
+        - Name: "Status"
+          Value: "{status}"
+          Inline: false
         - Name: "Player"
           Value: "{muted.name}"
           Inline: true
@@ -126,13 +135,17 @@ DiscordBot:
       Footer: "{server} | Super-Report"
       Timestamp: true
 
-  # How report and punishment embeds are updated once they're dealt with: recoloured, with a Status field added.
-  # Placeholders: everything from the original message, plus {time} (when it happened, shown relative)
-  #   ReportPunished:   {resolver.name} {outcome} (e.g. "Banned for 3 days")
-  #   ReportDismissed:  {resolver.name}
-  #   PunishmentLifted: {lifter.name}
+  # The {status} box at the top of each embed, which is updated as things change.
+  # Text in `backticks` shows as a rounded box on Discord. Once a report or punishment is over its embed
+  # is also recoloured with Color. {time} is when it changed, shown as e.g. "2 minutes ago"
   Status:
     Color: "95A5A6"
-    ReportPunished: "**Resolved** by {resolver.name} {time}\n{outcome}"
-    ReportDismissed: "**Dismissed** by {resolver.name} {time}"
-    PunishmentLifted: "**Lifted early** by {lifter.name} {time}"
+    Open: "`OPEN`"
+    # {resolver.name}, {outcome} (e.g. "Banned for 3 days")
+    Punished: "`RESOLVED` by {resolver.name} {time}\n{outcome}"
+    Dismissed: "`DISMISSED` by {resolver.name} {time}"
+    Banned: "`BANNED`"
+    Muted: "`MUTED`"
+    # {lifter.name}
+    Lifted: "`LIFTED` by {lifter.name} {time}"
+    Expired: "`EXPIRED` {time}"

@@ -38,32 +38,45 @@ public class EmbedSender {
     }
 
     public void sendReport(JDA api, Report report, Sent sent) {
-        send(api, data.getReport(), reportPlaceholders(report, data.getServerName(), ips), sent);
+        Map<String, String> placeholders = reportPlaceholders(report, data.getServerName(), ips);
+        placeholders.put("status", data.status(BotData.Status.OPEN));
+        send(api, data.getReport(), placeholders, sent);
     }
 
     public void sendPunishment(JDA api, Punishment punishment, Sent sent) {
-        send(api, data.getPunishment(punishment.type()), punishmentPlaceholders(punishment, data.getServerName(), ips), sent);
+        Map<String, String> placeholders = punishmentPlaceholders(punishment, data.getServerName(), ips);
+        placeholders.put("status", data.status(punishment.type() == PunishmentType.BAN ? BotData.Status.BANNED : BotData.Status.MUTED));
+        send(api, data.getPunishment(punishment.type()), placeholders, sent);
     }
 
-    // Rebuilds the report's embed greyed out with who dealt with it. punishment is null for a dismissed report
-    public void editReport(JDA api, long channelId, long messageId, Report report, Punishment punishment, Runnable gone) {
+    // Greys out the report's embed and shows who dealt with it and how. punishment is null for a dismissed report
+    public void editReport(JDA api, long channelId, long messageId, Report report, Punishment punishment, Runnable done) {
         Map<String, String> placeholders = reportPlaceholders(report, data.getServerName(), ips);
         addPlayer(placeholders, "resolver", report.resolvedBy(), ips);
         placeholders.put("time", discordTime(report.resolvedAt(), "R"));
         placeholders.put("outcome", outcome(punishment));
-        String status = fill(report.status() == ReportStatus.DISMISSED ? data.getReportDismissed() : data.getReportPunished(), placeholders);
-        edit(api, channelId, messageId, data.getReport().build(placeholders, data.getStatusColour(), status), gone);
+        BotData.Status status = report.status() == ReportStatus.DISMISSED ? BotData.Status.DISMISSED : BotData.Status.PUNISHED;
+        placeholders.put("status", fill(data.status(status), placeholders));
+        edit(api, channelId, messageId, data.getReport().buildClosed(placeholders, data.getClosedColour()), done);
     }
 
-    // Rebuilds the punishment's embed greyed out, with the live countdown replaced so it doesn't look like it still applies
-    public void editPunishment(JDA api, long channelId, long messageId, Punishment punishment, Runnable gone) {
+    // Greys out a lifted or expired punishment's embed. The live countdown is replaced so it doesn't look like it still applies
+    public void editPunishment(JDA api, long channelId, long messageId, Punishment punishment, Runnable done) {
         Map<String, String> placeholders = punishmentPlaceholders(punishment, data.getServerName(), ips);
         String prefix = punishment.type() == PunishmentType.BAN ? "ban" : "mute";
-        placeholders.put(prefix + ".expires", "Lifted " + discordTime(punishment.liftedAt(), "R"));
-        addPlayer(placeholders, "lifter", punishment.liftedBy(), ips);
-        placeholders.put("time", discordTime(punishment.liftedAt(), "R"));
-        String status = fill(data.getPunishmentLifted(), placeholders);
-        edit(api, channelId, messageId, data.getPunishment(punishment.type()).build(placeholders, data.getStatusColour(), status), gone);
+        BotData.Status status;
+        if (punishment.isLifted()) {
+            status = BotData.Status.LIFTED;
+            addPlayer(placeholders, "lifter", punishment.liftedBy(), ips);
+            placeholders.put("time", discordTime(punishment.liftedAt(), "R"));
+            placeholders.put(prefix + ".expires", "Lifted " + discordTime(punishment.liftedAt(), "R"));
+        } else {
+            status = BotData.Status.EXPIRED;
+            placeholders.put("time", discordTime(punishment.expiresAt(), "R"));
+            placeholders.put(prefix + ".expires", "Expired " + discordTime(punishment.expiresAt(), "R"));
+        }
+        placeholders.put("status", fill(data.status(status), placeholders));
+        edit(api, channelId, messageId, data.getPunishment(punishment.type()).buildClosed(placeholders, data.getClosedColour()), done);
     }
 
     static Map<String, String> reportPlaceholders(Report report, String server, Function<UUID, String> ips) {
@@ -146,17 +159,20 @@ public class EmbedSender {
         }
     }
 
-    private void edit(JDA api, long channelId, long messageId, MessageEmbed embed, Runnable gone) {
+    // done runs once the message no longer needs updating: it was edited, or it was deleted on Discord.
+    // While the bot isn't connected nothing runs, so it's tried again later
+    private void edit(JDA api, long channelId, long messageId, MessageEmbed embed, Runnable done) {
+        if (api.getStatus() != JDA.Status.CONNECTED) return;
         TextChannel channel = api.getTextChannelById(channelId);
         if (channel == null) {
-            gone.run();
+            // The channel was deleted, or the bot was removed from it
+            done.run();
             return;
         }
-        channel.editMessageEmbedsById(messageId, embed).queue(null, error -> {
-            // Someone deleted the message on Discord, so there's nothing left to update
+        channel.editMessageEmbedsById(messageId, embed).queue(edited -> done.run(), error -> {
             if (error instanceof ErrorResponseException
                     && ((ErrorResponseException) error).getErrorResponse() == ErrorResponse.UNKNOWN_MESSAGE) {
-                gone.run();
+                done.run();
             } else {
                 logger.warning("Couldn't update a Discord message: " + error.getMessage());
             }

@@ -36,6 +36,8 @@ public class DiscordBot {
         }
         embedSender = new EmbedSender(botData, this::ip, plugin.getLogger());
         enabled = true;
+        // Every minute, so a ban's embed shows EXPIRED soon after it runs out
+        plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, this::markExpiredPunishments, 1200L, 1200L);
     }
 
     public void sendReportEmbed(Report report) {
@@ -62,14 +64,25 @@ public class DiscordBot {
         }
     }
 
-    // Updates the punishment's embed after /unban or /unmute, so its countdown doesn't suggest it still applies
-    public void markPunishmentLifted(Punishment punishment) {
+    // Updates the punishment's embed after /unban or /unmute, or once it expires, so its countdown doesn't suggest it still applies
+    public void markPunishmentEnded(Punishment punishment) {
         if (!enabled) return;
         try {
             Optional<DiscordMessageRepository.Message> sent = plugin.getDiscordMessages().find(PUNISHMENT, punishment.id());
             if (!sent.isPresent()) return;
             embedSender.editPunishment(api, sent.get().channelId, sent.get().messageId, punishment,
                     () -> forget(PUNISHMENT, punishment.id()));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void markExpiredPunishments() {
+        if (!enabled) return;
+        try {
+            for (Punishment expired : plugin.getPunishments().findExpiredWithDiscordMessage()) {
+                markPunishmentEnded(expired);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -90,6 +103,7 @@ public class DiscordBot {
         }
     }
 
+    // Once a message is updated for the last time it's forgotten, which also stops the expiry check finding it again
     private void forget(String kind, UUID id) {
         try {
             plugin.getDiscordMessages().delete(kind, id);

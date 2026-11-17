@@ -68,6 +68,14 @@ public final class PunishmentRepository {
                 PunishmentRepository::map, player.toString());
     }
 
+    // Punishments that ran out on their own but whose Discord message still shows them as in force
+    public List<Punishment> findExpiredWithDiscordMessage() throws SQLException {
+        return database.query("SELECT p.* FROM " + Tables.PUNISHMENTS + " p JOIN " + Tables.DISCORD_MESSAGES + " m"
+                        + " ON m.`kind` = ? AND m.`ref_id` = p.`id`"
+                        + " WHERE p.`lifted_at` IS NULL AND p.`expires_at` IS NOT NULL AND p.`expires_at` <= ?",
+                PunishmentRepository::map, DiscordMessageRepository.PUNISHMENT, System.currentTimeMillis());
+    }
+
     // Active punishments of this type that servers sharing the database haven't acted on yet
     public List<Punishment> findUnnotified(PunishmentType type) throws SQLException {
         return database.query("SELECT * FROM " + Tables.PUNISHMENTS + " WHERE `type` = ? AND `notified` = ? AND " + ACTIVE,
