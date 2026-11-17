@@ -96,7 +96,7 @@ public class Main extends JavaPlugin {
 
     // Methods
     private void sendStartupMessage() {
-        getServer().getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&',
+        getServer().getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "\n" +
                 "&9&l------------[Super-Report]------------\n" +
                 "&a          Attempting to Launch           \n" +
                 "&a               \n" +
