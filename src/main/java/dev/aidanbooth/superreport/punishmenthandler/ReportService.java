@@ -149,7 +149,10 @@ public class ReportService {
 
     public List<Report> getReports() {
         try {
-            return reports.findAll();
+            List<Report> all = new ArrayList<>(reports.findAll());
+            // Newest first. Dates are stored as "yyyy-MM-dd HH:mm:ss", so text order is time order
+            all.sort((a, b) -> b.reportedAt().compareTo(a.reportedAt()));
+            return all;
         } catch (SQLException e) {
             logError("008", e);
             return new ArrayList<>();

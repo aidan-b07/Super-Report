@@ -7,6 +7,7 @@ import dev.aidanbooth.superreport.pipeline.PipelineStep;
 import dev.aidanbooth.superreport.pipeline.PipelineStepResult;
 import dev.aidanbooth.superreport.pipeline.data.PunishmentDraft;
 import dev.aidanbooth.superreport.pipeline.punishPipeline.inventories.ReasonInventory;
+import dev.aidanbooth.superreport.pipeline.shared.NavBar;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -25,6 +26,11 @@ public class ReasonStep implements PipelineStep<PunishmentDraft> {
 
     @Override
     public PipelineStepResult handleClick(Player player, PunishmentDraft data, InventoryClickEvent event) {
+        switch (NavBar.click(event, data.getReason() != null)) {
+            case BACK: return PipelineStepResult.BACK;
+            case NEXT: return PipelineStepResult.NEXT;
+            default: break;
+        }
         ConfigFile config = data.getPunishmentType() == PunishmentType.BAN
                 ? plugin.getBanReasonConfig()
                 : plugin.getMuteReasonConfig();

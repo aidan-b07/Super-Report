@@ -37,6 +37,16 @@ public final class GetDuration {
         return out.toString();
     }
 
+    // "3 hours ago" for a stored "yyyy-MM-dd HH:mm:ss" date, or the date as it is if it can't be read
+    public static String ago(String stored) {
+        try {
+            long seconds = (System.currentTimeMillis() - Timestamp.valueOf(stored.trim()).getTime()) / 1000;
+            return seconds < 60 ? "just now" : format(seconds, 1) + " ago";
+        } catch (RuntimeException e) {
+            return stored;
+        }
+    }
+
     // Time left until expiresAt, null means permanent
     public static String until(Timestamp expiresAt) {
         if (expiresAt == null) return "Permanent";

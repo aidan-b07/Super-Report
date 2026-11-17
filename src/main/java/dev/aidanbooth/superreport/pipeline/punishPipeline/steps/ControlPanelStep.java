@@ -1,36 +1,44 @@
 package dev.aidanbooth.superreport.pipeline.punishPipeline.steps;
 
-import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.pipeline.PipelineStep;
 import dev.aidanbooth.superreport.pipeline.PipelineStepResult;
 import dev.aidanbooth.superreport.pipeline.data.PunishmentDraft;
 import dev.aidanbooth.superreport.pipeline.punishPipeline.inventories.ControlPanelInventory;
+import dev.aidanbooth.superreport.pipeline.shared.NavBar;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 
 public class ControlPanelStep implements PipelineStep<PunishmentDraft> {
-    private Main plugin = Main.getPlugin(Main.class);
-    private ControlPanelInventory controlPanelInventory = new ControlPanelInventory();
+    private final ControlPanelInventory controlPanelInventory = new ControlPanelInventory();
 
     @Override
     public Inventory open(InventoryHolder holder, Player player, PunishmentDraft data) {
-        return controlPanelInventory.create(holder, data.getReporter(), data.getReported());
+        return controlPanelInventory.create(holder, data);
     }
 
     @Override
     public PipelineStepResult handleClick(Player player, PunishmentDraft data, InventoryClickEvent event) {
-        // TODO Switch to NBT data
-        if (event.getSlot() == 12) {
+        switch (NavBar.click(event, data.getAction() != null)) {
+            case BACK: return PipelineStepResult.BACK;
+            case NEXT: return continueWith(data.getAction());
+            default: break;
+        }
+        if (event.getSlot() == ControlPanelInventory.PUNISH) {
             data.setAction(PunishmentDraft.Action.PUNISH);
-            return PipelineStepResult.goTo(PunishTypeStep.class);
+            return continueWith(data.getAction());
         }
-        if (event.getSlot() == 14) {
+        if (event.getSlot() == ControlPanelInventory.DISMISS) {
             data.setAction(PunishmentDraft.Action.DISMISS);
-            return PipelineStepResult.goTo(DismissReportStep.class);
+            return continueWith(data.getAction());
         }
+        return PipelineStepResult.STAY;
+    }
 
-        return PipelineStepResult.REFRESH;
+    private static PipelineStepResult continueWith(PunishmentDraft.Action action) {
+        return action == PunishmentDraft.Action.PUNISH
+                ? PipelineStepResult.goTo(PunishTypeStep.class)
+                : PipelineStepResult.goTo(DismissReportStep.class);
     }
 }

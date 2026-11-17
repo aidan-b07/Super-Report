@@ -4,6 +4,7 @@ import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.configs.ConfigFile;
 import dev.aidanbooth.superreport.database.model.PunishmentType;
 import dev.aidanbooth.superreport.pipeline.data.PunishmentDraft;
+import dev.aidanbooth.superreport.pipeline.shared.NavBar;
 import dev.aidanbooth.superreport.utils.MenuItems;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -18,10 +19,14 @@ public class ReasonInventory {
 
     public Inventory create(InventoryHolder holder, PunishmentDraft data) {
         boolean ban = data.getPunishmentType() == PunishmentType.BAN;
-        return build(holder,
+        Inventory inventory = build(holder,
                 ban ? plugin.getBanReasonConfig() : plugin.getMuteReasonConfig(),
                 ban ? "&8Ban » Pick a reason" : "&8Mute » Pick a reason",
                 ban ? "Ban-Reasons.yml" : "Mute-Reasons.yml");
+        // The bottom corners are always Back and Next, whatever the config puts there
+        NavBar.add(inventory, "ban or mute", "Continue", data.getReason() != null,
+                "&7Keep &f" + data.getReason() + " &7and choose how long it lasts.");
+        return inventory;
     }
 
     private Inventory build(InventoryHolder holder, ConfigFile configFile, String defaultTitle, String fileName) {

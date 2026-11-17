@@ -44,6 +44,14 @@ class GetDurationTest {
     }
 
     @Test
+    void agoUsesTheLargestUnit() {
+        String threeHoursAgo = new Timestamp(System.currentTimeMillis() - 3 * 3600_000L - 5_000).toString().substring(0, 19);
+        assertEquals("3 hours ago", GetDuration.ago(threeHoursAgo));
+        assertEquals("just now", GetDuration.ago(new Timestamp(System.currentTimeMillis()).toString().substring(0, 19)));
+        assertEquals("not a date", GetDuration.ago("not a date"));
+    }
+
+    @Test
     void untilRoundsUp() {
         Timestamp inTwoMinutes = new Timestamp(System.currentTimeMillis() + 119_500);
         assertEquals("2 minutes", GetDuration.until(inTwoMinutes));

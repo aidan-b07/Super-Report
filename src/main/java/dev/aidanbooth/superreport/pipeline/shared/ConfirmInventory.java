@@ -1,61 +1,28 @@
 package dev.aidanbooth.superreport.pipeline.shared;
 
 import com.cryptomorin.xseries.XMaterial;
+import dev.aidanbooth.superreport.utils.MenuItems;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
+// Yes or no, with something in the middle showing what's being confirmed
 public class ConfirmInventory {
-    public Inventory create(InventoryHolder holder, String inventoryName) {
-        Inventory inv = Bukkit.createInventory(holder, 45, inventoryName);
-        addItems(inv);
+    public static final int CONFIRM = 11;
+    public static final int CANCEL = 15;
 
-        return inv;
-    }
-
-    private void addItems(Inventory inv) {
-        ItemStack confim = XMaterial.GREEN_WOOL.parseItem();
-        ItemMeta confirmMeta = confim.getItemMeta();
-        confirmMeta.setDisplayName(ChatColor.GREEN + "" + ChatColor.BOLD + "Confirm");
-        confim.setItemMeta(confirmMeta);
-
-        ItemStack cancel = XMaterial.RED_WOOL.parseItem();
-        ItemMeta cancelMeta = cancel.getItemMeta();
-        cancelMeta.setDisplayName(ChatColor.RED + "" + ChatColor.BOLD + "Cancel");
-        cancel.setItemMeta(cancelMeta);
-
-        ItemStack fillItem = XMaterial.GRAY_STAINED_GLASS_PANE.parseItem();
-        ItemMeta fillItemMeta = fillItem.getItemMeta();
-        fillItemMeta.setDisplayName(" ");
-        fillItem.setItemMeta(fillItemMeta);
-
-        for (int x = 0; x < inv.getSize(); x++) {
-            if (inv.getItem(x) == null) {
-                inv.setItem(x, fillItem);
-            }
-        } //Fill items
-
-        inv.setItem(10, confim);
-        inv.setItem(11, confim);
-        inv.setItem(12, confim);
-        inv.setItem(19, confim);
-        inv.setItem(20, confim);
-        inv.setItem(21, confim);
-        inv.setItem(28, confim);
-        inv.setItem(29, confim);
-        inv.setItem(30, confim);
-
-        inv.setItem(14, cancel);
-        inv.setItem(15, cancel);
-        inv.setItem(16, cancel);
-        inv.setItem(23, cancel);
-        inv.setItem(24, cancel);
-        inv.setItem(25, cancel);
-        inv.setItem(32, cancel);
-        inv.setItem(33, cancel);
-        inv.setItem(34, cancel);
+    public Inventory create(InventoryHolder holder, String title, ItemStack subject, String backTo,
+                            String confirmName, String... confirmLore) {
+        Inventory inventory = Bukkit.createInventory(holder, 36, MenuItems.title(title, t -> t));
+        inventory.setItem(13, subject);
+        inventory.setItem(CONFIRM, MenuItems.item(XMaterial.LIME_TERRACOTTA, "&a&l" + confirmName, confirmLore));
+        inventory.setItem(CANCEL, MenuItems.item(XMaterial.RED_TERRACOTTA, "&c&lCancel",
+                "&7Go back without changing anything.",
+                "",
+                "&e» Click to cancel"));
+        NavBar.add(inventory, backTo, confirmName, true, confirmLore);
+        MenuItems.fill(inventory, XMaterial.BLACK_STAINED_GLASS_PANE);
+        return inventory;
     }
 }

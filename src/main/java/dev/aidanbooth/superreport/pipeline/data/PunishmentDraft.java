@@ -20,6 +20,8 @@ public class PunishmentDraft {
     private String reason;
     private int duration;
     private List<Report> shownReports;
+    private int page;
+    private Report report;
 
     public PunishmentDraft(UUID resolver) {
         this.resolver = resolver;
@@ -39,6 +41,14 @@ public class PunishmentDraft {
 
     public List<Report> getShownReports() { return this.shownReports; }
     public void setShownReports(List<Report> reports) { this.shownReports = reports; }
+
+    // Page of the /reports list, starting at 0
+    public int getPage() { return this.page; }
+    public void setPage(int page) { this.page = page; }
+
+    // The report picked from the list
+    public Report getReport() { return this.report; }
+    public void setReport(Report report) { this.report = report; }
 
     public Action getAction() { return action; }
     public void setAction(Action action) { this.action = action; }
