@@ -73,6 +73,20 @@ public final class EmbedTemplate {
     }
 
     public MessageEmbed build(Map<String, String> placeholders) {
+        return build(placeholders, null, null);
+    }
+
+    // The same embed recoloured, with a Status field added at the end. Used when a report or punishment is dealt with
+    public MessageEmbed build(Map<String, String> placeholders, Color colourOverride, String status) {
+        MessageEmbed base = buildBase(placeholders);
+        if (status == null) return base;
+        EmbedBuilder embed = new EmbedBuilder(base);
+        if (colourOverride != null) embed.setColor(colourOverride);
+        embed.addField("Status", cut(status, MessageEmbed.VALUE_MAX_LENGTH), false);
+        return embed.build();
+    }
+
+    private MessageEmbed buildBase(Map<String, String> placeholders) {
         EmbedBuilder embed = new EmbedBuilder().setColor(colour);
         if (!author.isEmpty()) embed.setAuthor(fill(author, placeholders), null, fill(authorIcon, placeholders));
         if (!title.isEmpty()) embed.setTitle(cut(fill(title, placeholders), MessageEmbed.TITLE_MAX_LENGTH));
@@ -111,7 +125,7 @@ public final class EmbedTemplate {
         return text.length() <= max ? text : text.substring(0, max - 1) + "…";
     }
 
-    private static Color parseColour(String hex) {
+    static Color parseColour(String hex) {
         if (hex == null) return DEFAULT_COLOUR;
         try {
             return new Color(Integer.parseInt(hex.replace("#", "").trim(), 16));

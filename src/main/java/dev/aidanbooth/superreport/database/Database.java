@@ -60,7 +60,7 @@ public final class Database implements AutoCloseable {
 
     public synchronized void connect() throws SQLException {
         connection();
-        Tables.createAll(this);
+        Migrations.run(this);
     }
 
     private Connection connection() throws SQLException {

@@ -4,7 +4,6 @@ import dev.aidanbooth.superreport.database.model.Punishment;
 import dev.aidanbooth.superreport.database.model.PunishmentType;
 import dev.aidanbooth.superreport.database.model.Report;
 
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 
@@ -63,10 +62,9 @@ public class PunishmentDraft {
     public void setDuration(int duration) { this.duration = duration; }
     public void modifyDuration(int dt) { this.duration += dt; }
 
-    public Punishment build() {
-        Timestamp expiresAt = duration == -1
-                ? null
-                : new Timestamp(System.currentTimeMillis() + duration * 1000L);
-        return new Punishment(this.punishmentType, this.reported, this.reason, this.resolver, expiresAt);
+    // The punishment this draft describes, linked to its report and starting now
+    public Punishment build(String server) {
+        Long expiresAt = duration == -1 ? null : System.currentTimeMillis() + duration * 1000L;
+        return Punishment.issue(this.punishmentType, this.reported, this.reason, this.resolver, expiresAt, this.reportId, server);
     }
 }

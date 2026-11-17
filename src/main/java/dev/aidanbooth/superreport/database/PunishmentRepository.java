@@ -5,16 +5,18 @@ import dev.aidanbooth.superreport.database.model.PunishmentType;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static dev.aidanbooth.superreport.database.Rows.nullableLong;
+import static dev.aidanbooth.superreport.database.Rows.text;
+import static dev.aidanbooth.superreport.database.Rows.uuid;
+
 public final class PunishmentRepository {
 
-    public static final int PERMANENT = -1;
-
-    private static final String COLUMNS = "`UUID`, `REASON`, `DATE_TIME_LIFTED`, `PUNISHER_UUID`";
+    // Not lifted, and either permanent or not run out yet. Takes the current time as a parameter
+    private static final String ACTIVE = "`lifted_at` IS NULL AND (`expires_at` IS NULL OR `expires_at` > ?)";
 
     private final Database database;
 
@@ -22,80 +24,78 @@ public final class PunishmentRepository {
         this.database = database;
     }
 
-    public void add(PunishmentType type, UUID player, String reason, UUID punisher, String expires) throws SQLException {
-        database.transaction(conn -> {
-            Database.update(conn, "INSERT INTO " + type.table()
-                            + " (`UUID`, `DATE_TIME_LIFTED`, `REASON`, `PUNISHER_UUID`, `NEW`) VALUES (?, ?, ?, ?, ?)",
-                    player.toString(), expires, reason, punisher.toString(), true);
-            Database.update(conn, "UPDATE " + Tables.PLAYER_DATA + " SET `" + type.countColumn() + "` = `"
-                    + type.countColumn() + "` + 1 WHERE `UUID` = ?", player.toString());
-            return null;
-        });
-    }
-    public void add(PunishmentType type, UUID player, String reason, UUID punisher, int durationSeconds) throws SQLException {
-        String expires = durationSeconds == PERMANENT ? Timestamps.PERMANENT : Timestamps.secondsFromNow(durationSeconds);
-        add(type, player, reason, punisher, expires);
-    }
-    public void add(PunishmentType type, UUID player, String reason, UUID punisher, Timestamp timestamp) throws SQLException {
-        String expires = timestamp == null ? Timestamps.PERMANENT : timestamp.toString();
-        add(type, player, reason, punisher, expires);
+    public void add(Punishment punishment) throws SQLException {
+        database.update("INSERT INTO " + Tables.PUNISHMENTS
+                        + " (`id`, `type`, `player`, `reason`, `issued_by`, `issued_at`, `expires_at`, `lifted_by`, `lifted_at`,"
+                        + " `lift_reason`, `report_id`, `server`, `notified`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                punishment.id().toString(), punishment.type().name(), punishment.player().toString(), punishment.reason(),
+                punishment.issuedBy().toString(), punishment.issuedAt(), punishment.expiresAt(), text(punishment.liftedBy()),
+                punishment.liftedAt(), punishment.liftReason(), text(punishment.reportId()), punishment.server(), false);
     }
 
-    public Optional<Punishment> find(PunishmentType type, UUID player) throws SQLException {
-        return database.queryFirst("SELECT " + COLUMNS + " FROM " + type.table() + " WHERE `UUID` = ?",
-                row -> map(type, row), player.toString());
+    public Optional<Punishment> find(UUID id) throws SQLException {
+        return database.queryFirst("SELECT * FROM " + Tables.PUNISHMENTS + " WHERE `id` = ?", PunishmentRepository::map, id.toString());
     }
 
-    public boolean archive(PunishmentType type, UUID player) throws SQLException {
+    // The punishment of this type in force on the player right now, the newest if there are several
+    public Optional<Punishment> findActive(PunishmentType type, UUID player) throws SQLException {
+        return database.queryFirst("SELECT * FROM " + Tables.PUNISHMENTS + " WHERE `player` = ? AND `type` = ? AND " + ACTIVE
+                        + " ORDER BY `issued_at` DESC",
+                PunishmentRepository::map, player.toString(), type.name(), System.currentTimeMillis());
+    }
+
+    // Lifts every active punishment of this type on the player and returns them as they are now
+    public List<Punishment> liftActive(PunishmentType type, UUID player, UUID liftedBy, String reason) throws SQLException {
+        long now = System.currentTimeMillis();
         return database.transaction(conn -> {
-            List<Punishment> active = Database.query(conn,
-                    "SELECT " + COLUMNS + " FROM " + type.table() + " WHERE `UUID` = ?",
-                    row -> map(type, row), player.toString());
-            if (active.isEmpty()) {
-                return false;
+            List<Punishment> active = Database.query(conn, "SELECT * FROM " + Tables.PUNISHMENTS
+                            + " WHERE `player` = ? AND `type` = ? AND " + ACTIVE,
+                    PunishmentRepository::map, player.toString(), type.name(), now);
+            for (int i = 0; i < active.size(); i++) {
+                Punishment punishment = active.get(i);
+                Database.update(conn, "UPDATE " + Tables.PUNISHMENTS
+                                + " SET `lifted_by` = ?, `lifted_at` = ?, `lift_reason` = ? WHERE `id` = ?",
+                        liftedBy.toString(), now, reason, punishment.id().toString());
+                active.set(i, punishment.lifted(liftedBy, now, reason));
             }
-            String now = Timestamps.now();
-            for (Punishment punishment : active) {
-                Database.update(conn, "INSERT INTO " + Tables.PUNISHMENT_ARCHIVED
-                                + " (`UUID`, `TYPE`, `DATE_ARCHIVED`, `REASON`, `PUNISHER_UUID`) VALUES (?, ?, ?, ?, ?)",
-                        player.toString(), type.key(), now, punishment.reason(),
-                        punishment.punisher() == null ? null : punishment.punisher().toString());
-            }
-            Database.update(conn, "DELETE FROM " + type.table() + " WHERE `UUID` = ?", player.toString());
-            return true;
+            return active;
         });
     }
 
-    public List<Punishment> findNew(PunishmentType type) throws SQLException {
-        return database.query("SELECT " + COLUMNS + " FROM " + type.table() + " WHERE `NEW` = ?",
-                row -> map(type, row), true);
+    // Every punishment a player has had, newest first
+    public List<Punishment> history(UUID player) throws SQLException {
+        return database.query("SELECT * FROM " + Tables.PUNISHMENTS + " WHERE `player` = ? ORDER BY `issued_at` DESC",
+                PunishmentRepository::map, player.toString());
     }
 
-    public void markSeen(PunishmentType type, UUID player) throws SQLException {
-        database.update("UPDATE " + type.table() + " SET `NEW` = ? WHERE `UUID` = ?", false, player.toString());
+    // Active punishments of this type that servers sharing the database haven't acted on yet
+    public List<Punishment> findUnnotified(PunishmentType type) throws SQLException {
+        return database.query("SELECT * FROM " + Tables.PUNISHMENTS + " WHERE `type` = ? AND `notified` = ? AND " + ACTIVE,
+                PunishmentRepository::map, type.name(), false, System.currentTimeMillis());
     }
 
-    // Deletes every active and archived punishment and resets everyone's ban and mute counts
+    public void markNotified(UUID id) throws SQLException {
+        database.update("UPDATE " + Tables.PUNISHMENTS + " SET `notified` = ? WHERE `id` = ?", true, id.toString());
+    }
+
+    // Debug only: deletes every punishment
     public int deleteAll() throws SQLException {
-        return database.transaction(conn -> {
-            int removed = 0;
-            for (PunishmentType type : PunishmentType.values()) {
-                removed += Database.update(conn, "DELETE FROM " + type.table());
-                Database.update(conn, "UPDATE " + Tables.PLAYER_DATA + " SET `" + type.countColumn() + "` = 0");
-            }
-            removed += Database.update(conn, "DELETE FROM " + Tables.PUNISHMENT_ARCHIVED);
-            return removed;
-        });
+        return database.update("DELETE FROM " + Tables.PUNISHMENTS);
     }
 
-    private static Punishment map(PunishmentType type, ResultSet row) throws SQLException {
-        Timestamp expires = Timestamps.parse(row.getString("DATE_TIME_LIFTED"));
-        String punisher = row.getString("PUNISHER_UUID");
+    private static Punishment map(ResultSet row) throws SQLException {
         return new Punishment(
-                type,
-                UUID.fromString(row.getString("UUID")),
-                row.getString("REASON"),
-                punisher == null ? null : UUID.fromString(punisher),
-                Timestamps.isPermanent(expires) ? null : expires);
+                UUID.fromString(row.getString("id")),
+                PunishmentType.valueOf(row.getString("type")),
+                UUID.fromString(row.getString("player")),
+                row.getString("reason"),
+                UUID.fromString(row.getString("issued_by")),
+                row.getLong("issued_at"),
+                nullableLong(row, "expires_at"),
+                uuid(row, "lifted_by"),
+                nullableLong(row, "lifted_at"),
+                row.getString("lift_reason"),
+                uuid(row, "report_id"),
+                row.getString("server"));
     }
 }

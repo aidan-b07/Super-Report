@@ -5,6 +5,7 @@ import dev.aidanbooth.superreport.database.model.Punishment;
 import dev.aidanbooth.superreport.database.model.PunishmentType;
 import dev.aidanbooth.superreport.pipeline.data.ReportDraft;
 import dev.aidanbooth.superreport.punishmenthandler.PunishmentService;
+import dev.aidanbooth.superreport.utils.PlayerUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -26,7 +27,7 @@ import java.util.UUID;
 // Fires SuperReport's real service methods with fake data
 public class DebugCommand implements TabExecutor {
     // Stands in for the punisher or reporter when the console runs a command
-    private static final UUID CONSOLE = new UUID(0, 0);
+    private static final UUID CONSOLE = PlayerUtils.CONSOLE;
     private static final int MAX_FILL = 200;
 
     private final Main superReport;
@@ -120,19 +121,19 @@ public class DebugCommand implements TabExecutor {
             return;
         }
 
-        Timestamp expiresAt = null; // null = permanent
+        Long expiresAt = null; // null = permanent
         if (!args[3].equalsIgnoreCase("perm")) {
             int seconds = parseInt(args[3], -1);
             if (seconds < 1) {
                 error(sender, "Duration must be a number of seconds or perm");
                 return;
             }
-            expiresAt = new Timestamp(System.currentTimeMillis() + seconds * 1000L);
+            expiresAt = System.currentTimeMillis() + seconds * 1000L;
         }
         String reason = args.length > 4 ? join(args, 4) : "Debug punishment";
 
         PunishmentService.PunishResult result = superReport.getPunishmentService().punishPlayer(
-                new Punishment(type, uuidFor(sender, args[1]), reason, senderUuid(sender), expiresAt));
+                Punishment.issue(type, uuidFor(sender, args[1]), reason, senderUuid(sender), expiresAt, null, superReport.getServerName()));
         if (result == PunishmentService.PunishResult.BYPASSED) {
             error(sender, args[1] + " has " + type.bypassPermission() + ", so nothing was applied");
             return;

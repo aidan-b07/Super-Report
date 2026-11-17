@@ -61,7 +61,7 @@ public class ReportListInventory {
         return MenuItems.head(reported, "&c&l" + reported, Arrays.asList(
                 "&7Reason: &f" + report.reason(),
                 "&7Reported by: &f" + PlayerUtils.GetUsername(report.reporter()),
-                "&7When: &f" + GetDuration.ago(report.reportedAt()),
+                "&7When: &f" + GetDuration.ago(report.createdAt()),
                 "",
                 "&e» Click to review",
                 "&8#" + report.id().toString().substring(0, 8)));

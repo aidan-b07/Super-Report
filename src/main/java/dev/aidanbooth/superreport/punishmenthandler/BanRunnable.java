@@ -21,13 +21,14 @@ public class BanRunnable {
     private void checkNewBans() {
         List<Punishment> newBans;
         try {
-            newBans = plugin.getPunishments().findNew(PunishmentType.BAN);
+            newBans = plugin.getPunishments().findUnnotified(PunishmentType.BAN);
         } catch (SQLException e) {
             e.printStackTrace();
             return;
         }
         for (Punishment ban : newBans) {
             UUID uuid = ban.player();
+            UUID id = ban.id();
             plugin.getServer().getScheduler().runTask(plugin, () -> {
                 Player player = plugin.getServer().getPlayer(uuid);
                 if (player != null) {
@@ -37,7 +38,7 @@ public class BanRunnable {
             // Leave the flag set for one more cycle so other servers sharing the database see it too
             plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
                 try {
-                    plugin.getPunishments().markSeen(PunishmentType.BAN, uuid);
+                    plugin.getPunishments().markNotified(id);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }

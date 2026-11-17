@@ -19,7 +19,7 @@ public class MuteOnTalk implements Listener {
     private void onChat(AsyncPlayerChatEvent e) {
         Player player = e.getPlayer();
         try {
-            Optional<Punishment> mute = plugin.getPunishments().find(PunishmentType.MUTE, player.getUniqueId());
+            Optional<Punishment> mute = plugin.getPunishmentService().findActive(PunishmentType.MUTE, player.getUniqueId());
             if (!mute.isPresent()) {
                 return;
             }
@@ -27,11 +27,6 @@ public class MuteOnTalk implements Listener {
                 player.sendMessage(ChatColor.RED + "It seems you have been muted but can bypass!");
                 return;
             }
-            if (mute.get().isExpired()) {
-                plugin.getPunishments().archive(PunishmentType.MUTE, player.getUniqueId());
-                return;
-            }
-
             plugin.getPunishmentService().executeMuteMessage(e, mute.get());
         } catch (SQLException o) {
             o.printStackTrace();

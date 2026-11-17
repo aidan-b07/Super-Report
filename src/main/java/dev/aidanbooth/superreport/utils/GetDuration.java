@@ -1,6 +1,5 @@
 package dev.aidanbooth.superreport.utils;
 
-import java.sql.Timestamp;
 
 public final class GetDuration {
     public static final int PERMANENT = -1;
@@ -37,20 +36,16 @@ public final class GetDuration {
         return out.toString();
     }
 
-    // "3 hours ago" for a stored "yyyy-MM-dd HH:mm:ss" date, or the date as it is if it can't be read
-    public static String ago(String stored) {
-        try {
-            long seconds = (System.currentTimeMillis() - Timestamp.valueOf(stored.trim()).getTime()) / 1000;
-            return seconds < 60 ? "just now" : format(seconds, 1) + " ago";
-        } catch (RuntimeException e) {
-            return stored;
-        }
+    // "3 hours ago" for a time in epoch milliseconds
+    public static String ago(long millis) {
+        long seconds = (System.currentTimeMillis() - millis) / 1000;
+        return seconds < 60 ? "just now" : format(seconds, 1) + " ago";
     }
 
-    // Time left until expiresAt, null means permanent
-    public static String until(Timestamp expiresAt) {
+    // Time left until expiresAt (epoch milliseconds), null means permanent
+    public static String until(Long expiresAt) {
         if (expiresAt == null) return "Permanent";
-        long millisLeft = expiresAt.getTime() - System.currentTimeMillis();
+        long millisLeft = expiresAt - System.currentTimeMillis();
         // Round up so a ban with half a second left doesn't read "0 seconds"
         return format(Math.max(0, (millisLeft + 999) / 1000));
     }

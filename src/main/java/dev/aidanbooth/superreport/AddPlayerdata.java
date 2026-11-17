@@ -17,11 +17,13 @@ public class AddPlayerdata implements Listener {
     public void onJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
         UUID uuid = player.getUniqueId();
+        String name = player.getName();
         String ip = player.getAddress().getAddress().getHostAddress();
+        String server = plugin.getServerName();
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
-                plugin.getPlayerData().recordJoin(uuid, ip);
+                plugin.getPlayers().recordJoin(uuid, name, ip, server);
             } catch (SQLException ex) {
                 plugin.getServer().getConsoleSender().sendMessage(ErrorCodes.getTemplate("007"));
                 ex.printStackTrace();
@@ -34,7 +36,7 @@ public class AddPlayerdata implements Listener {
         UUID uuid = e.getPlayer().getUniqueId();
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
-                plugin.getPlayerData().recordQuit(uuid);
+                plugin.getPlayers().recordQuit(uuid);
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }

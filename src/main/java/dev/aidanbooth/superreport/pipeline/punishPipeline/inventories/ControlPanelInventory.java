@@ -3,6 +3,7 @@ package dev.aidanbooth.superreport.pipeline.punishPipeline.inventories;
 import com.cryptomorin.xseries.XMaterial;
 import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.database.model.PlayerData;
+import dev.aidanbooth.superreport.database.model.PlayerStats;
 import dev.aidanbooth.superreport.database.model.Report;
 import dev.aidanbooth.superreport.pipeline.data.PunishmentDraft;
 import dev.aidanbooth.superreport.pipeline.shared.NavBar;
@@ -61,13 +62,14 @@ public class ControlPanelInventory {
         lore.add(description);
         lore.add("");
         try {
-            Optional<PlayerData> found = plugin.getPlayerData().find(uuid);
+            Optional<PlayerData> found = plugin.getPlayers().find(uuid);
             if (found.isPresent()) {
                 PlayerData data = found.get();
-                lore.add("&7Status: " + (data.online() ? "&aOnline" : "&cOffline"));
-                lore.add("&7Times reported: &f" + data.reported());
-                lore.add("&7Reports sent: &f" + data.reports());
-                lore.add("&7Bans: &f" + data.bans() + "  &7Mutes: &f" + data.mutes());
+                PlayerStats stats = plugin.getPlayers().stats(uuid);
+                lore.add("&7Status: " + (data.online() ? "&aOnline &8(" + data.server() + ")" : "&cOffline &8(seen " + GetDuration.ago(data.lastSeen()) + ")"));
+                lore.add("&7Times reported: &f" + stats.timesReported());
+                lore.add("&7Reports sent: &f" + stats.reportsSent());
+                lore.add("&7Bans: &f" + stats.bans() + "  &7Mutes: &f" + stats.mutes());
             } else {
                 lore.add("&8No history yet, they haven't");
                 lore.add("&8joined this server before.");
@@ -84,7 +86,7 @@ public class ControlPanelInventory {
         return MenuItems.item(XMaterial.PAPER, "&e&lReport Details",
                 "&7Reason: &f" + report.reason(),
                 "&7Reported by: &f" + PlayerUtils.GetUsername(report.reporter()),
-                "&7When: &f" + GetDuration.ago(report.reportedAt()),
+                "&7When: &f" + GetDuration.ago(report.createdAt()),
                 "",
                 "&8#" + report.id().toString().substring(0, 8));
     }

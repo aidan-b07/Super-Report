@@ -13,6 +13,9 @@ MySQL:
   username: root
   password: password
 
+# This server's name. Tells servers apart when they share a MySQL database, and shows in Discord embeds as {server}
+ServerName: "Minecraft Server"
+
 DebugMode: false
 
 #####~~REPORT MENU~~#####
@@ -35,8 +38,6 @@ ReportMenu:
 DiscordBot:
   Enabled: false
   Token: "TOKENHERE"
-  # Shown in each embed's footer as {server}
-  ServerName: "Minecraft Server"
 
   # Placeholders: {reported.name} {reported.uuid} {reported.head} {reported.ip}
   #               {reporter.name} {reporter.uuid} {reporter.head} {reporter.ip}
@@ -124,3 +125,14 @@ DiscordBot:
           Inline: false
       Footer: "{server} | Super-Report"
       Timestamp: true
+
+  # How report and punishment embeds are updated once they're dealt with: recoloured, with a Status field added.
+  # Placeholders: everything from the original message, plus {time} (when it happened, shown relative)
+  #   ReportPunished:   {resolver.name} {outcome} (e.g. "Banned for 3 days")
+  #   ReportDismissed:  {resolver.name}
+  #   PunishmentLifted: {lifter.name}
+  Status:
+    Color: "95A5A6"
+    ReportPunished: "**Resolved** by {resolver.name} {time}\n{outcome}"
+    ReportDismissed: "**Dismissed** by {resolver.name} {time}"
+    PunishmentLifted: "**Lifted early** by {lifter.name} {time}"

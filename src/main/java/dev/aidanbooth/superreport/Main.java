@@ -13,7 +13,8 @@ import dev.aidanbooth.superreport.pipeline.PipelineManager;
 import dev.aidanbooth.superreport.punishmenthandler.*;
 import dev.aidanbooth.superreport.commands.report.ReportCommand;
 import dev.aidanbooth.superreport.database.Database;
-import dev.aidanbooth.superreport.database.PlayerDataRepository;
+import dev.aidanbooth.superreport.database.DiscordMessageRepository;
+import dev.aidanbooth.superreport.database.PlayerRepository;
 import dev.aidanbooth.superreport.database.PunishmentRepository;
 import dev.aidanbooth.superreport.database.ReportRepository;
 import dev.aidanbooth.superreport.utils.ErrorCodes;
@@ -33,9 +34,10 @@ public class Main extends JavaPlugin {
 
     private Database database;
     // TODO: Remove repo access here and route everything through the services
-    private PlayerDataRepository playerData;
+    private PlayerRepository players;
     private ReportRepository reports;
     private PunishmentRepository punishments;
+    private DiscordMessageRepository discordMessages;
 
     private PunishmentService punishmentService;
     private ReportService reportService;
@@ -53,7 +55,7 @@ public class Main extends JavaPlugin {
             return;
         }
         punishmentService = new PunishmentService();
-        reportService = new ReportService(this, reports, playerData);
+        reportService = new ReportService(this, reports, players);
         pipelineManager = new PipelineManager(this);
 
         registerListeners();
@@ -75,14 +77,21 @@ public class Main extends JavaPlugin {
     }
 
     // Getters
-    public PlayerDataRepository getPlayerData() {
-        return playerData;
+    public PlayerRepository getPlayers() {
+        return players;
     }
     public ReportRepository getReports() {
         return reports;
     }
     public PunishmentRepository getPunishments() {
         return punishments;
+    }
+    public DiscordMessageRepository getDiscordMessages() {
+        return discordMessages;
+    }
+    // Tells servers apart when they share a MySQL database, and is shown in Discord embeds
+    public String getServerName() {
+        return getConfig().getString("ServerName", "Minecraft Server");
     }
     public PunishmentService getPunishmentService() { return punishmentService; };
     public ReportService getReportService() { return reportService; }
@@ -133,17 +142,16 @@ public class Main extends JavaPlugin {
             getLogger().log(Level.SEVERE, "Could not connect to the database", e);
             return false;
         }
-        playerData = new PlayerDataRepository(database);
+        players = new PlayerRepository(database);
         reports = new ReportRepository(database);
         punishments = new PunishmentRepository(database);
+        discordMessages = new DiscordMessageRepository(database);
 
-        // A crash skips quit events. Only safe on SQLite, a shared MySQL database has players on other servers
-        if (!getConfig().getBoolean("MySQL.MySqlEnabled")) {
-            try {
-                playerData.markAllOffline();
-            } catch (SQLException e) {
-                getLogger().log(Level.WARNING, "Could not reset online players", e);
-            }
+        // A crash skips quit events. Only this server's players are reset, so it's safe on a shared database
+        try {
+            players.markAllOffline(getServerName());
+        } catch (SQLException e) {
+            getLogger().log(Level.WARNING, "Could not reset online players", e);
         }
         return true;
     }

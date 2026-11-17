@@ -22,12 +22,8 @@ public class BanOnJoin implements Listener {
 
         UUID player = e.getUniqueId();
         try {
-            Optional<Punishment> ban = plugin.getPunishments().find(PunishmentType.BAN, player);
+            Optional<Punishment> ban = plugin.getPunishmentService().findActive(PunishmentType.BAN, player);
             if (!ban.isPresent()) return;
-            if (ban.get().isExpired()) {
-                plugin.getPunishments().archive(PunishmentType.BAN, player);
-                return;
-            }
             plugin.getPunishmentService().executeKick(e, ban.get());
         } catch (SQLException o) {
             // If the database is down, let them in rather than locking everyone out

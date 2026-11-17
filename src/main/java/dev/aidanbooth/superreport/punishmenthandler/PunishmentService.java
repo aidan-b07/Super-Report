@@ -1,6 +1,7 @@
 package dev.aidanbooth.superreport.punishmenthandler;
 
 import dev.aidanbooth.superreport.Main;
+import dev.aidanbooth.superreport.database.model.PlayerData;
 import dev.aidanbooth.superreport.database.model.Punishment;
 import dev.aidanbooth.superreport.database.model.PunishmentType;
 import dev.aidanbooth.superreport.database.model.Report;
@@ -9,15 +10,14 @@ import dev.aidanbooth.superreport.pipeline.data.ReportDraft;
 import dev.aidanbooth.superreport.utils.ErrorCodes;
 import dev.aidanbooth.superreport.utils.GetDuration;
 import dev.aidanbooth.superreport.utils.PlayerUtils;
-import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,7 +44,7 @@ public class PunishmentService {
     public PunishResult punishPlayer(Punishment punishment) {
         if (canBypass(punishment)) return PunishResult.BYPASSED;
         try {
-            plugin.getPunishments().add(punishment.type(), punishment.player(), punishment.reason(), punishment.punisher(), punishment.expiresAt());
+            plugin.getPunishments().add(punishment);
         } catch (SQLException e) {
             e.printStackTrace();
             return PunishResult.ERROR;
@@ -62,17 +62,35 @@ public class PunishmentService {
 
     public enum LiftResult { LIFTED, NOT_PUNISHED, ERROR }
 
-    // Used by /unban and /unmute. An expired punishment counts as not punished, and is archived on the way
-    public LiftResult lift(PunishmentType type, UUID player) {
+    // Used by /unban and /unmute. Expired punishments are already over, so they count as not punished
+    public LiftResult lift(PunishmentType type, UUID player, UUID liftedBy) {
+        List<Punishment> lifted;
         try {
-            Optional<Punishment> active = plugin.getPunishments().find(type, player);
-            if (!active.isPresent()) return LiftResult.NOT_PUNISHED;
-            plugin.getPunishments().archive(type, player);
-            return active.get().isExpired() ? LiftResult.NOT_PUNISHED : LiftResult.LIFTED;
+            lifted = plugin.getPunishments().liftActive(type, player, liftedBy, null);
         } catch (SQLException e) {
             e.printStackTrace();
             return LiftResult.ERROR;
         }
+        for (Punishment punishment : lifted) plugin.getDiscordBot().markPunishmentLifted(punishment);
+        return lifted.isEmpty() ? LiftResult.NOT_PUNISHED : LiftResult.LIFTED;
+    }
+
+    // A player's UUID from their name. Players who have joined are found in the database first,
+    // so it works for anyone seen on any server sharing it, without a lookup to Mojang
+    @SuppressWarnings("deprecation")
+    public UUID findPlayerId(String name) {
+        try {
+            Optional<PlayerData> known = plugin.getPlayers().findByName(name);
+            if (known.isPresent()) return known.get().uuid();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Bukkit.getOfflinePlayer(name).getUniqueId();
+    }
+
+    // The punishment of this type on the player right now, if any
+    public Optional<Punishment> findActive(PunishmentType type, UUID player) throws SQLException {
+        return plugin.getPunishments().findActive(type, player);
     }
 
     // Debug only: removes every punishment for every player
@@ -80,18 +98,15 @@ public class PunishmentService {
         return plugin.getPunishments().deleteAll();
     }
 
-    // TODO Clean up
     public void executeKick(Player player) {
         Optional<Punishment> ban;
         try {
-            ban = plugin.getPunishments().find(PunishmentType.BAN, player.getUniqueId());
+            ban = plugin.getPunishments().findActive(PunishmentType.BAN, player.getUniqueId());
         } catch (SQLException e) {
             e.printStackTrace();
             return;
         }
-        if (!ban.isPresent() || ban.get().isExpired()) {
-            return;
-        }
+        if (!ban.isPresent()) return;
         // Bypass was already checked when the ban was issued
         player.kickPlayer(getBanMessage(ban.get()));
     }
@@ -113,14 +128,14 @@ public class PunishmentService {
     private String getBanMessage(Punishment ban) {
         String message = (ban.isPermanent() ? permanentBanMessage : temporaryBanMessage)
                 .replace("{reason}", ban.reason())
-                .replace("{banner}", PlayerUtils.GetUsername(ban.punisher()));
+                .replace("{banner}", PlayerUtils.GetUsername(ban.issuedBy()));
         if (!ban.isPermanent()) message = message.replace("{time}", GetDuration.until(ban.expiresAt()));
         return message;
     }
     private String getMuteMessage(Punishment mute) {
         String message = (mute.isPermanent() ? permanentMuteMessage : temporaryMuteMessage)
                 .replace("{reason}", mute.reason())
-                .replace("{muter}", PlayerUtils.GetUsername(mute.punisher()));
+                .replace("{muter}", PlayerUtils.GetUsername(mute.issuedBy()));
         if (!mute.isPermanent()) message = message.replace("{time}", GetDuration.until(mute.expiresAt()));
         return message;
     }

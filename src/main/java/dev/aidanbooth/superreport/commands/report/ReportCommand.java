@@ -2,18 +2,14 @@ package dev.aidanbooth.superreport.commands.report;
 
 import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.Main;
-import dev.aidanbooth.superreport.database.model.PlayerData;
 import dev.aidanbooth.superreport.pipeline.data.ReportDraft;
-import dev.aidanbooth.superreport.utils.ErrorCodes;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.sql.SQLException;
 
 public class ReportCommand implements CommandExecutor {
     private Main plugin = Main.getPlugin(Main.class);
@@ -85,32 +81,5 @@ public class ReportCommand implements CommandExecutor {
         // Pick a reason from the menu
         plugin.getReportService().openReportMenu(player, reportedPlayer);
         return true;
-    }
-    private boolean alreadyReported(Player reporter, OfflinePlayer reported) {
-        try {
-            return plugin.getReports().exists(reporter.getUniqueId(), reported.getUniqueId());
-        } catch (SQLException o) {
-            logError("004", o);
-            reportError(reporter);
-            return false;
-        }
-    }
-    private boolean isOnline(OfflinePlayer reportedPlayer, Player player) {
-        try {
-            return plugin.getPlayerData().find(reportedPlayer.getUniqueId())
-                    .map(PlayerData::online)
-                    .orElse(false);
-        } catch (SQLException e) {
-            logError("005", e);
-            reportError(player);
-            return false;
-        }
-    }
-    private void logError(String code, SQLException e) {
-        plugin.getServer().getConsoleSender().sendMessage(ErrorCodes.getTemplate(code));
-        e.printStackTrace();
-    }
-    private void reportError(Player player) {
-        player.sendMessage(reportErrorMessage);
     }
 }

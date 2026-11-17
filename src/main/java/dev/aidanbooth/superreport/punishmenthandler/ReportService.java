@@ -1,10 +1,12 @@
 package dev.aidanbooth.superreport.punishmenthandler;
 
 import dev.aidanbooth.superreport.Main;
-import dev.aidanbooth.superreport.database.PlayerDataRepository;
+import dev.aidanbooth.superreport.database.PlayerRepository;
 import dev.aidanbooth.superreport.database.ReportRepository;
 import dev.aidanbooth.superreport.database.model.PlayerData;
+import dev.aidanbooth.superreport.database.model.Punishment;
 import dev.aidanbooth.superreport.database.model.PunishmentType;
+import dev.aidanbooth.superreport.database.model.ReportStatus;
 import dev.aidanbooth.superreport.utils.GetDuration;
 import dev.aidanbooth.superreport.utils.PlayerUtils;
 import dev.aidanbooth.superreport.database.model.Report;
@@ -21,12 +23,13 @@ import org.bukkit.entity.Player;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 public class ReportService {
     private final Main plugin;
     private final ReportRepository reports;
-    private final PlayerDataRepository playerData;
+    private final PlayerRepository players;
     private final Pipeline<ReportDraft> reportPipeline;
     private final Pipeline<PunishmentDraft> punishmentPipeline;
 
@@ -35,10 +38,10 @@ public class ReportService {
 
     public enum ReportCheck { ALLOWED, NOT_ONLINE, SELF_REPORT, ALREADY_REPORTED, ERROR }
 
-    public ReportService(Main plugin, ReportRepository reports, PlayerDataRepository playerData) {
+    public ReportService(Main plugin, ReportRepository reports, PlayerRepository players) {
         this.plugin = plugin;
         this.reports = reports;
-        this.playerData = playerData;
+        this.players = players;
 
         this.reportPipeline = new Pipeline<>(this::submit, new SelectReportReasonStep());
         this.punishmentPipeline = new PunishmentPipeline(this::resolve);
@@ -60,9 +63,8 @@ public class ReportService {
     public void submit(ReportDraft draft) {
         Player reporter = Bukkit.getPlayer(draft.getReporter());
         try {
-            Report report = reports.create(draft.getReporter(), draft.getReported(), draft.getReason());
-            playerData.incrementReports(draft.getReporter());
-            playerData.incrementReported(draft.getReported());
+            Report report = Report.open(draft.getReporter(), draft.getReported(), draft.getReason(), plugin.getServerName());
+            reports.add(report);
             plugin.getDiscordBot().sendReportEmbed(report);
             if (reporter != null) reporter.sendMessage(successMessage);
             notifyStaff(report);
@@ -75,8 +77,18 @@ public class ReportService {
     public void resolve(PunishmentDraft draft) {
         Player resolver = Bukkit.getPlayer(draft.getResolver());
         boolean punish = draft.getAction() == PunishmentDraft.Action.PUNISH;
+        String reported = PlayerUtils.GetUsername(draft.getReported());
+
+        // Someone else may have dealt with it while this menu was open
+        if (!isStillOpen(draft)) {
+            if (resolver != null) resolver.sendMessage(plugin.getMessageConfig().get("Report.AlreadyClosed").replace("{player}", reported));
+            return;
+        }
+
+        Punishment punishment = null;
         if (punish) {
-            PunishmentService.PunishResult result = plugin.getPunishmentService().punishPlayer(draft.build());
+            punishment = draft.build(plugin.getServerName());
+            PunishmentService.PunishResult result = plugin.getPunishmentService().punishPlayer(punishment);
             if (result != PunishmentService.PunishResult.APPLIED) {
                 // Nothing was applied, so leave the report open for someone to deal with
                 if (resolver != null) resolver.sendMessage(punishFailedMessage(result, draft));
@@ -84,10 +96,11 @@ public class ReportService {
             }
         }
 
-        String reported = PlayerUtils.GetUsername(draft.getReported());
+        ReportStatus status = punish ? ReportStatus.PUNISHED : ReportStatus.DISMISSED;
         try {
-            // TODO Update to enums?
-            reports.archive(draft.getReportId(), draft.getResolver(), draft.getAction().toString());
+            if (reports.resolve(draft.getReportId(), status, draft.getResolver(), punishment == null ? null : punishment.id())) {
+                plugin.getDiscordBot().markReportResolved(draft.getReportId());
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             if (resolver != null) resolver.sendMessage(plugin.getMessageConfig().get("Report.ArchiveError").replace("{player}", reported));
@@ -107,6 +120,16 @@ public class ReportService {
         }
     }
 
+    private boolean isStillOpen(PunishmentDraft draft) {
+        try {
+            Optional<Report> report = reports.find(draft.getReportId());
+            return report.isPresent() && report.get().status() == ReportStatus.OPEN;
+        } catch (SQLException e) {
+            logError("008", e);
+            return false;
+        }
+    }
+
     private String punishFailedMessage(PunishmentService.PunishResult result, PunishmentDraft draft) {
         String path = result == PunishmentService.PunishResult.BYPASSED ? "Punishment.Bypassed" : "Punishment.Error";
         return plugin.getMessageConfig().get(path)
@@ -119,7 +142,7 @@ public class ReportService {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             int open;
             try {
-                open = reports.countActive();
+                open = reports.countOpen();
             } catch (SQLException e) {
                 logError("008", e);
                 return;
@@ -149,14 +172,14 @@ public class ReportService {
         if (reporter.getUniqueId().equals(reported.getUniqueId())) return ReportCheck.SELF_REPORT;
 
         try {
-            if (reports.exists(reporter.getUniqueId(), reported.getUniqueId())) return ReportCheck.ALREADY_REPORTED;
+            if (reports.hasOpen(reporter.getUniqueId(), reported.getUniqueId())) return ReportCheck.ALREADY_REPORTED;
         } catch (SQLException e) {
             logError("004", e);
             return ReportCheck.ERROR;
         }
         try {
             // Checked in the database so players on other servers sharing it count as online
-            boolean online = playerData.find(reported.getUniqueId()).map(PlayerData::online).orElse(false);
+            boolean online = players.find(reported.getUniqueId()).map(PlayerData::online).orElse(false);
             if (!online) return ReportCheck.NOT_ONLINE;
         } catch (SQLException e) {
             logError("005", e);
@@ -167,17 +190,14 @@ public class ReportService {
 
     public List<Report> getReports() {
         try {
-            List<Report> all = new ArrayList<>(reports.findAll());
-            // Newest first. Dates are stored as "yyyy-MM-dd HH:mm:ss", so text order is time order
-            all.sort((a, b) -> b.reportedAt().compareTo(a.reportedAt()));
-            return all;
+            return reports.findOpen();
         } catch (SQLException e) {
             logError("008", e);
             return new ArrayList<>();
         }
     }
 
-    // Debug only: removes every report, active and archived
+    // Debug only: removes every report
     public int clearAll() throws SQLException {
         return reports.deleteAll();
     }

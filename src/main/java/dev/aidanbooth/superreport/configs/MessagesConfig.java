@@ -46,6 +46,7 @@ public class MessagesConfig extends ConfigFile {
         // Sent to the staff member who resolved a report. {action} is banned or muted, {duration} is "for 3 days" or "permanently"
         config().set("Punishment.Applied", "{prefix}&a- &6{player} &ahas been {action} {duration} for &6{reason}&a! The report has been resolved.");
         config().set("Report.Dismissed", "{prefix}&a- The report against &6{player} &ahas been dismissed!");
+        config().set("Report.AlreadyClosed", "{prefix}&c- The report against &6{player} &cwas already closed by someone else!");
         config().set("Report.ArchiveError", "{prefix}&c- The report against &6{player} &ccouldn't be closed! Check the console for errors.");
         config().set("Punishment.Bypassed", "{prefix}&c- &6{player} &ccan't be {action}, they have the bypass permission! The report is still open.");
         config().set("Punishment.Error", "{prefix}&c- The punishment couldn't be saved, so the report is still open! Check the console for errors.");

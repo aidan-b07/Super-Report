@@ -1,9 +1,11 @@
 package dev.aidanbooth.superreport.database;
 
 import dev.aidanbooth.superreport.database.model.PlayerData;
+import dev.aidanbooth.superreport.database.model.PlayerStats;
 import dev.aidanbooth.superreport.database.model.Punishment;
 import dev.aidanbooth.superreport.database.model.PunishmentType;
 import dev.aidanbooth.superreport.database.model.Report;
+import dev.aidanbooth.superreport.database.model.ReportStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,9 +25,10 @@ class RepositoryTest {
     File folder;
 
     private Database database;
-    private PlayerDataRepository playerData;
+    private PlayerRepository players;
     private ReportRepository reports;
     private PunishmentRepository punishments;
+    private DiscordMessageRepository messages;
 
     private final UUID alice = UUID.randomUUID();
     private final UUID bob = UUID.randomUUID();
@@ -34,9 +38,10 @@ class RepositoryTest {
     void setUp() throws SQLException {
         database = Database.sqlite(new File(folder, "test.db"));
         database.connect();
-        playerData = new PlayerDataRepository(database);
+        players = new PlayerRepository(database);
         reports = new ReportRepository(database);
         punishments = new PunishmentRepository(database);
+        messages = new DiscordMessageRepository(database);
     }
 
     @AfterEach
@@ -45,139 +50,175 @@ class RepositoryTest {
     }
 
     @Test
-    void firstJoinCreatesRowAndLaterJoinsUpdateIp() throws SQLException {
-        playerData.recordJoin(alice, "1.1.1.1");
-        playerData.recordJoin(alice, "2.2.2.2");
-
-        PlayerData data = playerData.find(alice).orElseThrow(AssertionError::new);
-        assertEquals("2.2.2.2", data.ip());
-        assertTrue(data.online());
-        assertEquals(0, data.reports());
-        assertEquals(1, database.query("SELECT * FROM " + Tables.PLAYER_DATA, row -> true).size());
+    void migrationsRunOnceAndCanRunAgain() throws SQLException {
+        database.close();
+        database.connect();
+        int version = database.queryFirst("SELECT `version` FROM " + Tables.SCHEMA, row -> row.getInt(1)).orElse(-1);
+        assertEquals(Migrations.latest(), version);
+        assertEquals(1, database.query("SELECT `version` FROM " + Tables.SCHEMA, row -> true).size());
     }
 
     @Test
-    void reportCountersIncrementTheRightPlayer() throws SQLException {
-        playerData.recordJoin(alice, "1.1.1.1");
-        playerData.recordJoin(bob, "2.2.2.2");
+    void joinAddsThenUpdatesAPlayer() throws SQLException {
+        players.recordJoin(alice, "Alice", "1.2.3.4", "lobby");
+        PlayerData first = players.find(alice).get();
+        assertTrue(first.online());
+        assertEquals("lobby", first.server());
 
-        playerData.incrementReports(alice);
-        playerData.incrementReported(bob);
-
-        assertEquals(1, playerData.find(alice).get().reports());
-        assertEquals(0, playerData.find(alice).get().reported());
-        assertEquals(1, playerData.find(bob).get().reported());
+        players.recordQuit(alice);
+        players.recordJoin(alice, "AliceRenamed", "5.6.7.8", "survival");
+        PlayerData again = players.find(alice).get();
+        assertEquals("AliceRenamed", again.name());
+        assertEquals("5.6.7.8", again.lastIp());
+        assertEquals("survival", again.server());
+        assertEquals(first.firstSeen(), again.firstSeen());
     }
 
     @Test
-    void quittingAndRestartingMarkPlayersOffline() throws SQLException {
-        playerData.recordJoin(alice, "1.1.1.1");
-        playerData.recordJoin(bob, "2.2.2.2");
-
-        playerData.recordQuit(alice);
-        assertFalse(playerData.find(alice).get().online());
-        assertTrue(playerData.find(bob).get().online());
-
-        playerData.markAllOffline();
-        assertFalse(playerData.find(bob).get().online());
+    void findsPlayersByNameIgnoringCase() throws SQLException {
+        players.recordJoin(alice, "Alice", "1.2.3.4", "lobby");
+        assertEquals(alice, players.findByName("aLiCe").get().uuid());
+        assertFalse(players.findByName("nobody").isPresent());
     }
 
     @Test
-    void punishmentsAreCountedPerPlayer() throws SQLException {
-        playerData.recordJoin(alice, "1.1.1.1");
-
-        punishments.add(PunishmentType.BAN, alice, "hacking", staff, 600);
-        punishments.add(PunishmentType.MUTE, alice, "spam", staff, 600);
-        punishments.add(PunishmentType.MUTE, alice, "spam again", staff, PunishmentRepository.PERMANENT);
-
-        PlayerData data = playerData.find(alice).get();
-        assertEquals(1, data.bans());
-        assertEquals(2, data.mutes());
+    void markAllOfflineOnlyTouchesThisServer() throws SQLException {
+        players.recordJoin(alice, "Alice", null, "lobby");
+        players.recordJoin(bob, "Bob", null, "survival");
+        players.markAllOffline("lobby");
+        assertFalse(players.find(alice).get().online());
+        assertTrue(players.find(bob).get().online());
     }
 
     @Test
-    void reasonsWithQuotesAreStoredAsTyped() throws SQLException {
-        String reason = "he's flying'); DROP TABLE " + Tables.REPORTS_ACTIVE + "; --";
-        Report report = reports.create(alice, bob, reason);
+    void openReportsAreNewestFirst() throws SQLException {
+        Report older = new Report(UUID.randomUUID(), alice, bob, "Hacking", "lobby", 1000, ReportStatus.OPEN, null, null, null);
+        Report newer = new Report(UUID.randomUUID(), staff, bob, "Spamming", "lobby", 2000, ReportStatus.OPEN, null, null, null);
+        reports.add(older);
+        reports.add(newer);
 
-        assertEquals(reason, reports.find(report.id()).get().reason());
-        assertTrue(reports.exists(alice, bob));
-        assertFalse(reports.exists(bob, alice));
+        List<Report> open = reports.findOpen();
+        assertEquals(newer.id(), open.get(0).id());
+        assertEquals(older.id(), open.get(1).id());
+        assertEquals(2, reports.countOpen());
+        assertTrue(reports.hasOpen(alice, bob));
+        assertFalse(reports.hasOpen(bob, alice));
     }
 
     @Test
-    void archivingAReportMovesItToTheInactiveTable() throws SQLException {
-        Report report = reports.create(alice, bob, "spam");
+    void resolvingClosesAReportOnce() throws SQLException {
+        Report report = Report.open(alice, bob, "Hacking", "lobby");
+        reports.add(report);
+        UUID punishmentId = UUID.randomUUID();
 
-        assertTrue(reports.archive(report.id(), staff, "dismissed"));
-        assertFalse(reports.archive(report.id(), staff, "dismissed"));
+        assertTrue(reports.resolve(report.id(), ReportStatus.PUNISHED, staff, punishmentId));
+        // A second staff member finishing at the same time doesn't overwrite the first
+        assertFalse(reports.resolve(report.id(), ReportStatus.DISMISSED, alice, null));
 
-        assertTrue(reports.findAll().isEmpty());
-        List<String> outcomes = database.query(
-                "SELECT `PUNISHMENT` FROM " + Tables.REPORTS_INACTIVE + " WHERE `RESOLVER_UUID` = ?",
-                row -> row.getString(1), staff.toString());
-        assertEquals(1, outcomes.size());
-        assertEquals("dismissed", outcomes.get(0));
+        Report resolved = reports.find(report.id()).get();
+        assertEquals(ReportStatus.PUNISHED, resolved.status());
+        assertEquals(staff, resolved.resolvedBy());
+        assertEquals(punishmentId, resolved.punishmentId());
+        assertNotNull(resolved.resolvedAt());
+        assertEquals(0, reports.countOpen());
+        assertFalse(reports.hasOpen(alice, bob));
+        assertEquals(1, reports.findAgainst(bob).size());
     }
 
     @Test
-    void temporaryAndPermanentPunishments() throws SQLException {
-        punishments.add(PunishmentType.BAN, alice, "hacking", staff, 3600);
-        punishments.add(PunishmentType.MUTE, bob, "spam", staff, PunishmentRepository.PERMANENT);
+    void activePunishmentsIgnoreExpiredAndLiftedOnes() throws SQLException {
+        long now = System.currentTimeMillis();
+        Punishment expired = new Punishment(UUID.randomUUID(), PunishmentType.BAN, bob, "Old", staff, now - 20000,
+                now - 10000, null, null, null, null, "lobby");
+        punishments.add(expired);
+        assertFalse(punishments.findActive(PunishmentType.BAN, bob).isPresent());
 
-        Punishment ban = punishments.find(PunishmentType.BAN, alice).orElseThrow(AssertionError::new);
-        assertFalse(ban.isPermanent());
-        assertFalse(ban.isExpired());
-        assertEquals(staff, ban.punisher());
+        Punishment temporary = Punishment.issue(PunishmentType.BAN, bob, "Hacking", staff, now + 60000, null, "lobby");
+        punishments.add(temporary);
+        Optional<Punishment> active = punishments.findActive(PunishmentType.BAN, bob);
+        assertTrue(active.isPresent());
+        assertEquals(temporary.id(), active.get().id());
+        assertEquals(now + 60000, active.get().expiresAt());
 
-        Punishment mute = punishments.find(PunishmentType.MUTE, bob).orElseThrow(AssertionError::new);
-        assertTrue(mute.isPermanent());
-        assertFalse(mute.isExpired());
-
-        assertFalse(punishments.find(PunishmentType.MUTE, alice).isPresent());
+        // A mute isn't a ban
+        assertFalse(punishments.findActive(PunishmentType.MUTE, bob).isPresent());
     }
 
     @Test
-    void expiredPunishmentIsReportedAsExpired() throws SQLException {
-        punishments.add(PunishmentType.BAN, alice, "hacking", staff, -3600);
-
-        assertTrue(punishments.find(PunishmentType.BAN, alice).get().isExpired());
+    void permanentPunishmentsStayActive() throws SQLException {
+        Punishment permanent = Punishment.issue(PunishmentType.MUTE, bob, "Spamming", staff, null, null, "lobby");
+        punishments.add(permanent);
+        Punishment found = punishments.findActive(PunishmentType.MUTE, bob).get();
+        assertTrue(found.isPermanent());
+        assertNull(found.expiresAt());
     }
 
     @Test
-    void liftingAMuteArchivesItAsAMute() throws SQLException {
-        punishments.add(PunishmentType.MUTE, alice, "spam", staff, 600);
+    void liftingKeepsTheHistory() throws SQLException {
+        UUID reportId = UUID.randomUUID();
+        Punishment ban = Punishment.issue(PunishmentType.BAN, bob, "Hacking", staff, null, reportId, "lobby");
+        punishments.add(ban);
 
-        assertTrue(punishments.archive(PunishmentType.MUTE, alice));
-        assertFalse(punishments.archive(PunishmentType.MUTE, alice));
+        List<Punishment> lifted = punishments.liftActive(PunishmentType.BAN, bob, alice, "Appeal accepted");
+        assertEquals(1, lifted.size());
+        assertEquals(alice, lifted.get(0).liftedBy());
+        assertTrue(lifted.get(0).isLifted());
+        assertFalse(punishments.findActive(PunishmentType.BAN, bob).isPresent());
+        // Nothing left to lift
+        assertTrue(punishments.liftActive(PunishmentType.BAN, bob, alice, null).isEmpty());
 
-        assertFalse(punishments.find(PunishmentType.MUTE, alice).isPresent());
-        List<String> types = database.query("SELECT `TYPE` FROM " + Tables.PUNISHMENT_ARCHIVED, row -> row.getString(1));
-        assertEquals(1, types.size());
-        assertEquals("mute", types.get(0));
+        Punishment stored = punishments.find(ban.id()).get();
+        assertEquals("Appeal accepted", stored.liftReason());
+        assertEquals(reportId, stored.reportId());
+        assertEquals(1, punishments.history(bob).size());
     }
 
     @Test
-    void newBansStayNewUntilMarkedSeen() throws SQLException {
-        punishments.add(PunishmentType.BAN, alice, "hacking", staff, 600);
-
-        assertEquals(1, punishments.findNew(PunishmentType.BAN).size());
-        punishments.markSeen(PunishmentType.BAN, alice);
-        assertTrue(punishments.findNew(PunishmentType.BAN).isEmpty());
+    void newBansAreNotifiedOnce() throws SQLException {
+        Punishment ban = Punishment.issue(PunishmentType.BAN, bob, "Hacking", staff, null, null, "lobby");
+        punishments.add(ban);
+        assertEquals(1, punishments.findUnnotified(PunishmentType.BAN).size());
+        punishments.markNotified(ban.id());
+        assertTrue(punishments.findUnnotified(PunishmentType.BAN).isEmpty());
     }
 
     @Test
-    void readsRowsWrittenBySuperReport1() throws SQLException {
-        database.update("INSERT INTO " + Tables.PUNISHMENT_BAN
-                        + " (`UUID`, `DATE_TIME_LIFTED`, `REASON`, `PUNISHER_UUID`, `NEW`) VALUES (?, ?, ?, ?, ?)",
-                alice.toString(), "2000-01-01 00:00:00", "old ban", staff.toString(), "true");
-        database.update("INSERT INTO " + Tables.PUNISHMENT_MUTE
-                        + " (`UUID`, `DATE_TIME_LIFTED`, `REASON`, `PUNISHER_UUID`, `NEW`) VALUES (?, ?, ?, ?, ?)",
-                bob.toString(), "2099-01-01 00:00:00.0", "old mute", staff.toString(), "true");
+    void statsAreCountedFromHistory() throws SQLException {
+        reports.add(Report.open(alice, bob, "Hacking", "lobby"));
+        reports.add(Report.open(staff, bob, "Spamming", "lobby"));
+        punishments.add(Punishment.issue(PunishmentType.BAN, bob, "Hacking", staff, null, null, "lobby"));
+        punishments.add(Punishment.issue(PunishmentType.MUTE, bob, "Spamming", staff, null, null, "lobby"));
+        punishments.add(Punishment.issue(PunishmentType.MUTE, bob, "Spamming", staff, null, null, "lobby"));
 
-        assertTrue(punishments.find(PunishmentType.BAN, alice).get().isPermanent());
-        Punishment mute = punishments.find(PunishmentType.MUTE, bob).get();
-        assertFalse(mute.isPermanent());
-        assertFalse(mute.isExpired());
+        PlayerStats stats = players.stats(bob);
+        assertEquals(2, stats.timesReported());
+        assertEquals(0, stats.reportsSent());
+        assertEquals(1, stats.bans());
+        assertEquals(2, stats.mutes());
+        assertEquals(1, players.stats(alice).reportsSent());
+    }
+
+    @Test
+    void discordMessagesAreRememberedAndForgotten() throws SQLException {
+        UUID reportId = UUID.randomUUID();
+        messages.save(DiscordMessageRepository.REPORT, reportId, 111L, 222L);
+        messages.save(DiscordMessageRepository.REPORT, reportId, 333L, 444L);
+
+        DiscordMessageRepository.Message message = messages.find(DiscordMessageRepository.REPORT, reportId).get();
+        assertEquals(333L, message.channelId);
+        assertEquals(444L, message.messageId);
+        assertFalse(messages.find(DiscordMessageRepository.PUNISHMENT, reportId).isPresent());
+
+        messages.delete(DiscordMessageRepository.REPORT, reportId);
+        assertFalse(messages.find(DiscordMessageRepository.REPORT, reportId).isPresent());
+    }
+
+    @Test
+    void deleteAllEmptiesReportsAndPunishments() throws SQLException {
+        reports.add(Report.open(alice, bob, "Hacking", "lobby"));
+        punishments.add(Punishment.issue(PunishmentType.BAN, bob, "Hacking", staff, null, null, "lobby"));
+        assertEquals(1, reports.deleteAll());
+        assertEquals(1, punishments.deleteAll());
+        assertEquals(0, reports.countOpen());
     }
 }

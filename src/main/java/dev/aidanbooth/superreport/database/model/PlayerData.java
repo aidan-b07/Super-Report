@@ -2,51 +2,32 @@ package dev.aidanbooth.superreport.database.model;
 
 import java.util.UUID;
 
+// A row of superreport_players. Times are epoch milliseconds
 public final class PlayerData {
 
-    private final UUID player;
-    private final int reports;
-    private final int reported;
+    private final UUID uuid;
+    private final String name;
+    private final long firstSeen;
+    private final long lastSeen;
     private final boolean online;
-    private final int bans;
-    private final int mutes;
-    private final String ip;
+    private final String server;
+    private final String lastIp;
 
-    public PlayerData(UUID player, int reports, int reported, boolean online, int bans, int mutes, String ip) {
-        this.player = player;
-        this.reports = reports;
-        this.reported = reported;
+    public PlayerData(UUID uuid, String name, long firstSeen, long lastSeen, boolean online, String server, String lastIp) {
+        this.uuid = uuid;
+        this.name = name;
+        this.firstSeen = firstSeen;
+        this.lastSeen = lastSeen;
         this.online = online;
-        this.bans = bans;
-        this.mutes = mutes;
-        this.ip = ip;
+        this.server = server;
+        this.lastIp = lastIp;
     }
 
-    public UUID player() {
-        return player;
-    }
-
-    public int reports() {
-        return reports;
-    }
-
-    public int reported() {
-        return reported;
-    }
-
-    public boolean online() {
-        return online;
-    }
-
-    public int bans() {
-        return bans;
-    }
-
-    public int mutes() {
-        return mutes;
-    }
-
-    public String ip() {
-        return ip;
-    }
+    public UUID uuid() { return uuid; }
+    public String name() { return name; }
+    public long firstSeen() { return firstSeen; }
+    public long lastSeen() { return lastSeen; }
+    public boolean online() { return online; }
+    public String server() { return server; }
+    public String lastIp() { return lastIp; }
 }

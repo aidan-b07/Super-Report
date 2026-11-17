@@ -1,15 +1,20 @@
 package dev.aidanbooth.superreport.discord;
 
 import dev.aidanbooth.superreport.Main;
+import dev.aidanbooth.superreport.database.DiscordMessageRepository;
 import dev.aidanbooth.superreport.database.model.Punishment;
 import dev.aidanbooth.superreport.database.model.Report;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-
 import net.dv8tion.jda.api.exceptions.InvalidTokenException;
+
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
+
+import static dev.aidanbooth.superreport.database.DiscordMessageRepository.PUNISHMENT;
+import static dev.aidanbooth.superreport.database.DiscordMessageRepository.REPORT;
 
 public class DiscordBot {
     private final Main plugin = Main.getPlugin(Main.class);
@@ -34,11 +39,40 @@ public class DiscordBot {
     }
 
     public void sendReportEmbed(Report report) {
-        if (enabled) embedSender.sendReport(api, report);
+        if (enabled) embedSender.sendReport(api, report, (channel, message) -> remember(REPORT, report.id(), channel, message));
     }
 
     public void sendPunishmentEmbed(Punishment punishment) {
-        if (enabled) embedSender.sendPunishment(api, punishment);
+        if (enabled) embedSender.sendPunishment(api, punishment, (channel, message) -> remember(PUNISHMENT, punishment.id(), channel, message));
+    }
+
+    // Updates the report's embed once it's been punished or dismissed
+    public void markReportResolved(UUID reportId) {
+        if (!enabled) return;
+        try {
+            Optional<DiscordMessageRepository.Message> sent = plugin.getDiscordMessages().find(REPORT, reportId);
+            Optional<Report> report = plugin.getReports().find(reportId);
+            if (!sent.isPresent() || !report.isPresent()) return;
+            Punishment punishment = report.get().punishmentId() == null ? null
+                    : plugin.getPunishments().find(report.get().punishmentId()).orElse(null);
+            embedSender.editReport(api, sent.get().channelId, sent.get().messageId, report.get(), punishment,
+                    () -> forget(REPORT, reportId));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Updates the punishment's embed after /unban or /unmute, so its countdown doesn't suggest it still applies
+    public void markPunishmentLifted(Punishment punishment) {
+        if (!enabled) return;
+        try {
+            Optional<DiscordMessageRepository.Message> sent = plugin.getDiscordMessages().find(PUNISHMENT, punishment.id());
+            if (!sent.isPresent()) return;
+            embedSender.editPunishment(api, sent.get().channelId, sent.get().messageId, punishment,
+                    () -> forget(PUNISHMENT, punishment.id()));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     // Stops JDA's threads so reloads and /stop don't hang
@@ -47,9 +81,26 @@ public class DiscordBot {
         enabled = false;
     }
 
+    // Runs on JDA's thread once Discord confirms the message. Database calls are synchronized, so this is safe
+    private void remember(String kind, UUID id, long channelId, long messageId) {
+        try {
+            plugin.getDiscordMessages().save(kind, id, channelId, messageId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void forget(String kind, UUID id) {
+        try {
+            plugin.getDiscordMessages().delete(kind, id);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     private String ip(UUID player) {
         try {
-            return plugin.getPlayerData().findIp(player).orElse(null);
+            return plugin.getPlayers().findIp(player).orElse(null);
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
