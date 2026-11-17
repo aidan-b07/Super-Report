@@ -1,6 +1,7 @@
 package dev.aidanbooth.superreport.configs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ReportMenuConfig extends ConfigFile {
@@ -10,71 +11,73 @@ public class ReportMenuConfig extends ConfigFile {
 
     @Override
     protected void addDefaults() {
-        config().createSection("ReportMenu");
-
-        config().set("ReportMenu.Size", 36);
-
-        config().createSection("ReportMenu.Items.Slot");
-
-        config().createSection("ReportMenu.Items.Slot.13");
-        config().set("ReportMenu.Items.Slot.13.Material", "nether_star");
-        config().set("ReportMenu.Items.Slot.13.Name", "&cReport &6{player}");
-        List<String> lore1 = new ArrayList<>();
-        lore1.add("&7Select what you want this player");
-        lore1.add("&7to be reported for!");
-        config().set("ReportMenu.Items.Slot.13.Lore", lore1);
-        config().set("ReportMenu.Items.Slot.13.Amount", 1);
-        config().set("ReportMenu.Items.Slot.13.Option", false);
-
-        config().createSection("ReportMenu.Items.Slot.19");
-        config().set("ReportMenu.Items.Slot.19.Material", "diamond");
-        config().set("ReportMenu.Items.Slot.19.Name", "&cKill Aura");
-        List<String> lore2 = new ArrayList<>();
-        lore2.add("&7Click to report this player");
-        lore2.add("&7for kill aura!");
-        config().set("ReportMenu.Items.Slot.19.Lore", lore2);
-        config().set("ReportMenu.Items.Slot.19.Amount", 1);
-        config().set("ReportMenu.Items.Slot.19.Option", true);
-
-        config().createSection("ReportMenu.Items.Slot.21");
-        config().set("ReportMenu.Items.Slot.21.Material", "diamond");
-        config().set("ReportMenu.Items.Slot.21.Name", "&cChat Abuse");
-        List<String> lore3 = new ArrayList<>();
-        lore3.add("&7Click to report this player");
-        lore3.add("&7for chat abuse!");
-        config().set("ReportMenu.Items.Slot.21.Lore", lore3);
-        config().set("ReportMenu.Items.Slot.21.Amount", 1);
-        config().set("ReportMenu.Items.Slot.21.Option", true);
-
-        config().createSection("ReportMenu.Items.Slot.23");
-        config().set("ReportMenu.Items.Slot.23.Material", "diamond");
-        config().set("ReportMenu.Items.Slot.23.Name", "&cCross-Teaming");
-        List<String> lore4 = new ArrayList<>();
-        lore4.add("&7Click to report this player");
-        lore4.add("&7for cross-teaming!");
-        config().set("ReportMenu.Items.Slot.23.Lore", lore4);
-        config().set("ReportMenu.Items.Slot.23.Amount", 1);
-        config().set("ReportMenu.Items.Slot.23.Option", true);
-
-        config().createSection("ReportMenu.Items.Slot.25");
-        config().set("ReportMenu.Items.Slot.25.Material", "diamond");
-        config().set("ReportMenu.Items.Slot.25.Name", "&cTeam Griefing");
-        List<String> lore5 = new ArrayList<>();
-        lore5.add("&7Click to report this player");
-        lore5.add("&7for team griefing!");
-        config().set("ReportMenu.Items.Slot.25.Lore", lore5);
-        config().set("ReportMenu.Items.Slot.25.Amount", 1);
-        config().set("ReportMenu.Items.Slot.25.Option", true);
-
-        config().createSection("ReportMenu.Items.Fill");
-        config().set("ReportMenu.Items.Fill.Material", "gray_stained_glass_pane");
+        config().set("ReportMenu.Title", "&8Report » {player}");
+        config().set("ReportMenu.Size", 45);
+        config().set("ReportMenu.Items.Fill.Material", "black_stained_glass_pane");
         config().set("ReportMenu.Items.Fill.Name", " ");
 
+        // Option: false makes an item display only. Head: shows that player's skin on a player_head
+        String info = "ReportMenu.Items.Slot.4";
+        config().set(info + ".Material", "player_head");
+        config().set(info + ".Head", "{player}");
+        config().set(info + ".Name", "&b&lReporting &f{player}");
+        config().set(info + ".Lore", Arrays.asList(
+                "&7Pick what {player} did wrong.",
+                "&7Staff are told straight away.",
+                "",
+                "&8False reports can be punished."));
+        config().set(info + ".Amount", 1);
+        config().set(info + ".Option", false);
+
+        int[] grid = ReasonsConfig.GRID;
+        reason(grid[0], "diamond_sword", "Hacking",
+                "Kill aura, reach, fly, speed or",
+                "any other unfair advantage.");
+        reason(grid[1], "diamond_ore", "X-Ray",
+                "Heading straight for ores or",
+                "seeing through blocks.");
+        reason(grid[2], "flint_and_steel", "Griefing",
+                "Breaking, burning or stealing",
+                "from someone else's build.");
+        reason(grid[3], "tnt", "Bug Exploiting",
+                "Using glitches or duplicating",
+                "items.");
+        reason(grid[4], "leather_chestplate", "Cross-Teaming",
+                "Teaming up with other players",
+                "or teams when they shouldn't.");
+        reason(grid[5], "paper", "Spamming",
+                "Flooding chat or repeating",
+                "the same message.");
+        reason(grid[6], "book", "Inappropriate Chat",
+                "Swearing, slurs, advertising",
+                "or sexual messages.");
+        reason(grid[7], "skeleton_skull", "Harassment",
+                "Targeting, bullying or",
+                "threatening someone.");
+        reason(grid[8], "gold_ingot", "Scamming",
+                "Tricking players out of items",
+                "or money.");
+    }
+
+    // reason is what staff see in /reports and on Discord
+    private void reason(int slot, String material, String reason, String... description) {
+        String path = "ReportMenu.Items.Slot." + slot;
+        List<String> lore = new ArrayList<>();
+        for (String line : description) lore.add("&7" + line);
+        lore.add("");
+        lore.add("&e» Click to report {player}");
+
+        config().set(path + ".Material", material);
+        config().set(path + ".Name", "&b&l" + reason);
+        config().set(path + ".Reason", reason);
+        config().set(path + ".Lore", lore);
+        config().set(path + ".Amount", 1);
+        config().set(path + ".Option", true);
     }
 
     @Override
     protected boolean isRequired(String key) {
         // Not the reason slots, so admins can remove reasons
-        return key.equals("ReportMenu.Size") || key.startsWith("ReportMenu.Items.Fill.");
+        return key.equals("ReportMenu.Title") || key.equals("ReportMenu.Size") || key.startsWith("ReportMenu.Items.Fill.");
     }
 }

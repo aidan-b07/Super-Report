@@ -30,7 +30,10 @@ public class SelectReportReasonStep implements PipelineStep<ReportDraft> {
         ItemStack item = event.getCurrentItem();
         if (item == null || !item.hasItemMeta()) return PipelineStepResult.STAY;
 
-        data.setReason(ChatColor.stripColor(item.getItemMeta().getDisplayName()));
+        // Reason is optional in the config, older files only have a Name
+        String reason = plugin.getReportMenuConfig().config().getString("ReportMenu.Items.Slot." + event.getSlot() + ".Reason");
+        if (reason == null || reason.trim().isEmpty()) reason = ChatColor.stripColor(item.getItemMeta().getDisplayName());
+        data.setReason(reason);
         return PipelineStepResult.COMPLETE;
     }
 }
