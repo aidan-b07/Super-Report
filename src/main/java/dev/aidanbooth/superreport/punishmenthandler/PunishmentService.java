@@ -16,7 +16,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
 import java.sql.SQLException;
 import java.util.Date;
@@ -41,14 +41,30 @@ public class PunishmentService {
         this.temporaryMuteMessage = Colour(ConfigUtils.BuildConfigMessage(plugin.getMessageConfig(), "TemporaryMuteMessage"));
     }
 
-    public void punishPlayer(Punishment punishment) {
+    public enum PunishResult { APPLIED, BYPASSED, ERROR }
+
+    public PunishResult punishPlayer(Punishment punishment) {
+        if (canBypass(punishment)) return PunishResult.BYPASSED;
         try {
             plugin.getPunishments().add(punishment.type(), punishment.player(), punishment.reason(), punishment.punisher(), punishment.expiresAt());
-            plugin.getDiscordBot().sendPunishmentEmbed(punishment);
-            if(punishment.type().equals(PunishmentType.BAN)) executeKick(punishment);
         } catch (SQLException e) {
             e.printStackTrace();
+            return PunishResult.ERROR;
         }
+        plugin.getDiscordBot().sendPunishmentEmbed(punishment);
+        if (punishment.type() == PunishmentType.BAN) executeKick(punishment);
+        return PunishResult.APPLIED;
+    }
+
+    // Only works for online players, Bukkit can't check an offline player's permissions
+    public boolean canBypass(Punishment punishment) {
+        Player target = Bukkit.getPlayer(punishment.player());
+        return target != null && target.hasPermission(punishment.type().bypassPermission());
+    }
+
+    // Debug only: removes every punishment for every player
+    public int clearAll() throws SQLException {
+        return plugin.getPunishments().deleteAll();
     }
 
     // TODO Clean up
@@ -63,10 +79,7 @@ public class PunishmentService {
         if (!ban.isPresent() || ban.get().isExpired()) {
             return;
         }
-        if (player.hasPermission("superreport.bypass.ban")) {
-            player.sendMessage(ChatColor.RED + "It seems you have been banned but can bypass!");
-            return;
-        }
+        // Bypass was already checked when the ban was issued
         player.kickPlayer(getBanMessage(ban.get()));
     }
     public void executeKick(Punishment punishment) {
@@ -74,8 +87,8 @@ public class PunishmentService {
             executeKick(Bukkit.getOfflinePlayer(punishment.player()).getPlayer());
         }
     }
-    public void executeKick(PlayerLoginEvent e, Punishment punishment) {
-        e.disallow(PlayerLoginEvent.Result.KICK_OTHER, getBanMessage(punishment));
+    public void executeKick(AsyncPlayerPreLoginEvent e, Punishment punishment) {
+        e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, getBanMessage(punishment));
     }
 
     public void executeMuteMessage(AsyncPlayerChatEvent e, Punishment punishment) {

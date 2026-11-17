@@ -4,6 +4,8 @@ import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.database.PlayerDataRepository;
 import dev.aidanbooth.superreport.database.ReportRepository;
 import dev.aidanbooth.superreport.database.model.PlayerData;
+import dev.aidanbooth.superreport.database.model.PunishmentType;
+import dev.aidanbooth.superreport.utils.PlayerUtils;
 import dev.aidanbooth.superreport.database.model.Report;
 import dev.aidanbooth.superreport.pipeline.Pipeline;
 import dev.aidanbooth.superreport.pipeline.data.PunishmentDraft;
@@ -71,7 +73,13 @@ public class ReportService {
     }
     public void resolve(PunishmentDraft draft) {
         if (draft.getAction() == PunishmentDraft.Action.PUNISH) {
-            plugin.getPunishmentService().punishPlayer(draft.build());
+            PunishmentService.PunishResult result = plugin.getPunishmentService().punishPlayer(draft.build());
+            if (result != PunishmentService.PunishResult.APPLIED) {
+                // Nothing was applied, so leave the report open for someone to deal with
+                Player resolver = Bukkit.getPlayer(draft.getResolver());
+                if (resolver != null) resolver.sendMessage(punishFailedMessage(result, draft));
+                return;
+            }
         }
 
         try {
@@ -81,6 +89,17 @@ public class ReportService {
             // TODO Handle error
             e.printStackTrace();
         }
+    }
+
+    private String punishFailedMessage(PunishmentService.PunishResult result, PunishmentDraft draft) {
+        String path = result == PunishmentService.PunishResult.BYPASSED ? "Punishment.Bypassed" : "Punishment.Error";
+        String fallback = result == PunishmentService.PunishResult.BYPASSED
+                ? "&1&l[&9&lSuper-Report&1&l] &c- &6{player} &ccan't be {action}, they have the bypass permission. The report is still open."
+                : "&1&l[&9&lSuper-Report&1&l] &c- The punishment couldn't be saved. The report is still open.";
+        // Fallback keeps older Messages.yml files (written before these keys existed) working
+        return Colour(plugin.getMessageConfig().config().getString(path, fallback)
+                .replace("{player}", PlayerUtils.GetUsername(draft.getReported()))
+                .replace("{action}", draft.getPunishmentType() == PunishmentType.BAN ? "banned" : "muted"));
     }
 
     public ReportCheck canReport(Player reporter, OfflinePlayer reported) {
@@ -111,6 +130,11 @@ public class ReportService {
             logError("008", e);
             return new ArrayList<>();
         }
+    }
+
+    // Debug only: removes every report, active and archived
+    public int clearAll() throws SQLException {
+        return reports.deleteAll();
     }
 
     private void logError(String code, SQLException e) {

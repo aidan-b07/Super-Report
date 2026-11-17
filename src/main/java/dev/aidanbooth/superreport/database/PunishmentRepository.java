@@ -75,6 +75,19 @@ public final class PunishmentRepository {
         database.update("UPDATE " + type.table() + " SET `NEW` = ? WHERE `UUID` = ?", false, player.toString());
     }
 
+    // Deletes every active and archived punishment and resets everyone's ban and mute counts
+    public int deleteAll() throws SQLException {
+        return database.transaction(conn -> {
+            int removed = 0;
+            for (PunishmentType type : PunishmentType.values()) {
+                removed += Database.update(conn, "DELETE FROM " + type.table());
+                Database.update(conn, "UPDATE " + Tables.PLAYER_DATA + " SET `" + type.countColumn() + "` = 0");
+            }
+            removed += Database.update(conn, "DELETE FROM " + Tables.PUNISHMENT_ARCHIVED);
+            return removed;
+        });
+    }
+
     private static Punishment map(PunishmentType type, ResultSet row) throws SQLException {
         Timestamp expires = Timestamps.parse(row.getString("DATE_TIME_LIFTED"));
         String punisher = row.getString("PUNISHER_UUID");

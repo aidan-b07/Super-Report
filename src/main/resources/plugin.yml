@@ -49,6 +49,7 @@ permissions:
     default: op
   superreport.mutebypass:
     description: Prevents users with this permission from being muted. Typically used by staff
-    default: op
+    default: false
   superreport.banbypass:
     description: Prevents users with this permission from being banned. Typically used by staff
+    default: false

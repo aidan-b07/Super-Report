@@ -27,7 +27,7 @@ public class MuteOnTalk implements Listener {
             if (!mute.isPresent()) {
                 return;
             }
-            if (player.hasPermission("superreport.bypass.mute")) {
+            if (player.hasPermission(PunishmentType.MUTE.bypassPermission())) {
                 player.sendMessage(ChatColor.RED + "It seems you have been muted but can bypass!");
                 return;
             }

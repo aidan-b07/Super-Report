@@ -60,6 +60,16 @@ public final class ReportRepository {
         });
     }
 
+    // Deletes every active and archived report and resets everyone's report counts
+    public int deleteAll() throws SQLException {
+        return database.transaction(conn -> {
+            int removed = Database.update(conn, "DELETE FROM " + Tables.REPORTS_ACTIVE);
+            removed += Database.update(conn, "DELETE FROM " + Tables.REPORTS_INACTIVE);
+            Database.update(conn, "UPDATE " + Tables.PLAYER_DATA + " SET `REPORTS` = 0, `REPORTED` = 0");
+            return removed;
+        });
+    }
+
     private static Report map(ResultSet row) throws SQLException {
         return new Report(
                 UUID.fromString(row.getString("UUID")),
