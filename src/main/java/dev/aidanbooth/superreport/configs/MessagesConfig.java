@@ -27,6 +27,8 @@ public class MessagesConfig extends ConfigFile {
         // Colours: &a success, &c error, &e information, &6 names and values
         config().set("Prefix", "&1&l[&9&lSuper-Report&1&l] ");
 
+        config().set("Commands.PlayersOnly", "{prefix}&c- Only players can use this command!");
+
         config().set("ReportCommand.Usage", "{prefix}&e- Usage: &6/report <player> [reason]");
         config().set("ReportCommand.PlayerNotOnline", "{prefix}&c- &6{player} &cis not online!");
         config().set("ReportCommand.SelfReport", "{prefix}&c- You can't report yourself!");
@@ -53,7 +55,6 @@ public class MessagesConfig extends ConfigFile {
 
         // /punish, /ban and /mute. {action} is banned or muted, {duration} is "for 3 days" or "permanently"
         config().set("PunishCommand.Usage", "{prefix}&e- Usage: &6/punish <player>&e, &6/ban <player> &eor &6/mute <player>");
-        config().set("PunishCommand.PlayersOnly", "{prefix}&c- Only players can open the punish menu!");
         config().set("PunishCommand.Self", "{prefix}&c- You can't punish yourself!");
         config().set("PunishCommand.Applied", "{prefix}&a- &6{player} &ahas been {action} {duration} for &6{reason}&a!");
         config().set("PunishCommand.AlreadyPunished", "{prefix}&c- &6{player} &cis already {action}!");

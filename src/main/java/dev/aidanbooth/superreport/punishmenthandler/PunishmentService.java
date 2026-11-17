@@ -15,7 +15,6 @@ import dev.aidanbooth.superreport.utils.ErrorCodes;
 import dev.aidanbooth.superreport.utils.GetDuration;
 import dev.aidanbooth.superreport.utils.PlayerUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
@@ -177,10 +176,10 @@ public class PunishmentService {
         // Bypass was already checked when the ban was issued
         player.kickPlayer(getBanMessage(ban.get()));
     }
+    // Kicks the player straight away if they're on this server
     public void executeKick(Punishment punishment) {
-        if(Bukkit.getOfflinePlayer(punishment.player()).isOnline()) {
-            executeKick(Bukkit.getOfflinePlayer(punishment.player()).getPlayer());
-        }
+        Player player = Bukkit.getPlayer(punishment.player());
+        if (player != null) player.kickPlayer(getBanMessage(punishment));
     }
     public void executeKick(AsyncPlayerPreLoginEvent e, Punishment punishment) {
         e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, getBanMessage(punishment));
@@ -206,6 +205,4 @@ public class PunishmentService {
         if (!mute.isPermanent()) message = message.replace("{time}", GetDuration.until(mute.expiresAt()));
         return message;
     }
-
-
 }

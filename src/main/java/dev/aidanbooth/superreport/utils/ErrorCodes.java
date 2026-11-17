@@ -20,9 +20,6 @@ public class ErrorCodes {
                         "&c              Disabling SuperReport              \n" +
                         "&9&l-----------------------------------");
     }
-    public static String generalMessage() {
-        return ChatColor.translateAlternateColorCodes('&', "&cThere was an error while attempting this! Check the console for more details.");
-    }
 
     //Error code 001 - Error while adding report to active reports                                              ==ReportCommand==
     //Error code 002 - Error while adding report to player data                                                 ==ReportCommand==

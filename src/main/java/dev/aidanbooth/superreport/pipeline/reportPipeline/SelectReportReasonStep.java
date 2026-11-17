@@ -19,7 +19,7 @@ public class SelectReportReasonStep implements PipelineStep<ReportDraft> {
 
     @Override
     public Inventory open(InventoryHolder holder, Player player, ReportDraft data) {
-        return reportMenu.create(holder, Bukkit.getOfflinePlayer(data.getReported()));
+        return reportMenu.create(holder, data.getReportedName());
     }
 
     @Override

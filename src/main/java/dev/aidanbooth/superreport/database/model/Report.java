@@ -30,9 +30,10 @@ public final class Report {
         this.punishmentId = punishmentId;
     }
 
-    // A new open report, made now
+    // A new open report, made now. The reason is cut to 255 characters, the most the database column holds
     public static Report open(UUID reporter, UUID reported, String reason, String server) {
-        return new Report(UUID.randomUUID(), reporter, reported, reason, server, System.currentTimeMillis(),
+        String fitted = reason.length() > 255 ? reason.substring(0, 255) : reason;
+        return new Report(UUID.randomUUID(), reporter, reported, fitted, server, System.currentTimeMillis(),
                 ReportStatus.OPEN, null, null, null);
     }
 

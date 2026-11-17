@@ -89,7 +89,7 @@ public class DebugCommand implements TabExecutor {
             return;
         }
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
-        superReport.getReportService().openReportMenu((Player) sender, target);
+        superReport.getReportService().openReportMenu((Player) sender, target.getUniqueId(), args[1]);
     }
 
     // /srdebug fill <amount>

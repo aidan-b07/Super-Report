@@ -17,13 +17,14 @@ import dev.aidanbooth.superreport.pipeline.punishPipeline.PunishmentPipeline;
 import dev.aidanbooth.superreport.pipeline.reportPipeline.SelectReportReasonStep;
 import dev.aidanbooth.superreport.utils.ErrorCodes;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
+
 import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 
 public class ReportService {
@@ -50,8 +51,9 @@ public class ReportService {
         this.errorMessage = plugin.getMessageConfig().get("ReportCommand.ReportError");
     }
 
-    public void openReportMenu(Player reporter, OfflinePlayer reported) {
-        ReportDraft draft = new ReportDraft(reported.getUniqueId(), reporter.getUniqueId());
+    public void openReportMenu(Player reporter, UUID reported, String reportedName) {
+        ReportDraft draft = new ReportDraft(reported, reporter.getUniqueId());
+        draft.setReportedName(reportedName);
         plugin.getPipelineManager().start(reporter, reportPipeline, draft);
     }
     public void openReportsMenu(Player player) {
@@ -167,19 +169,33 @@ public class ReportService {
         }
     }
 
-    public ReportCheck canReport(Player reporter, OfflinePlayer reported) {
-        if (reported == null) return ReportCheck.NOT_ONLINE;
-        if (reporter.getUniqueId().equals(reported.getUniqueId())) return ReportCheck.SELF_REPORT;
+    // A player's UUID and name from what was typed: online here first, then anyone on a server sharing the database.
+    // Empty for names never seen, without asking Mojang, as only online players can be reported anyway
+    public Optional<PlayerData> findReportable(String name) {
+        Player online = Bukkit.getPlayerExact(name);
+        if (online != null) {
+            return Optional.of(new PlayerData(online.getUniqueId(), online.getName(), 0, 0, true, plugin.getServerName(), null));
+        }
+        try {
+            return players.findByName(name);
+        } catch (SQLException e) {
+            logError("005", e);
+            return Optional.empty();
+        }
+    }
+
+    public ReportCheck canReport(Player reporter, UUID reported) {
+        if (reporter.getUniqueId().equals(reported)) return ReportCheck.SELF_REPORT;
 
         try {
-            if (reports.hasOpen(reporter.getUniqueId(), reported.getUniqueId())) return ReportCheck.ALREADY_REPORTED;
+            if (reports.hasOpen(reporter.getUniqueId(), reported)) return ReportCheck.ALREADY_REPORTED;
         } catch (SQLException e) {
             logError("004", e);
             return ReportCheck.ERROR;
         }
         try {
-            // Checked in the database so players on other servers sharing it count as online
-            boolean online = players.find(reported.getUniqueId()).map(PlayerData::online).orElse(false);
+            // Online here, or on another server sharing the database
+            boolean online = Bukkit.getPlayer(reported) != null || players.find(reported).map(PlayerData::online).orElse(false);
             if (!online) return ReportCheck.NOT_ONLINE;
         } catch (SQLException e) {
             logError("005", e);

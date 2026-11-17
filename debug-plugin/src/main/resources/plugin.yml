@@ -2,6 +2,7 @@ name: SuperReportDebug
 author: Superbility
 version: ${project.version}
 main: dev.aidanbooth.superreportdebug.SuperReportDebug
+api-version: '1.13'
 depend: [SuperReport]
 commands:
   srdebug:

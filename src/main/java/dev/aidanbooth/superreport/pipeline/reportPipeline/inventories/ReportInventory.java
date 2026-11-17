@@ -3,7 +3,6 @@ package dev.aidanbooth.superreport.pipeline.reportPipeline.inventories;
 import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.utils.MenuItems;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.Inventory;
@@ -15,9 +14,8 @@ public class ReportInventory {
     private static final String FILE = "ReportMenu.yml";
     private Main plugin = Main.getPlugin(Main.class);
 
-    public Inventory create(InventoryHolder holder, OfflinePlayer reported) {
+    public Inventory create(InventoryHolder holder, String name) {
         FileConfiguration config = plugin.getReportMenuConfig().config();
-        String name = reported.getName() != null ? reported.getName() : "Unknown";
         UnaryOperator<String> placeholders = text -> text.replace("{player}", name);
 
         String title = MenuItems.title(config.getString("ReportMenu.Title", "&8Report » {player}"), placeholders);

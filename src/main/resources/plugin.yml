@@ -2,22 +2,24 @@ name: SuperReport
 author: Superbility
 version: ${project.version}
 main: dev.aidanbooth.superreport.Main
+description: Player reports, bans and mutes through menus, with a Discord log for staff
+# Tells 1.13+ servers the plugin uses the modern material names (XMaterial handles older versions), so they skip legacy mode. Older servers ignore it
+api-version: '1.13'
 commands:
   report:
-    description: Reports players!
-    usage: /<command>
+    description: Report a player to staff
+    usage: /<command> <player> [reason]
     permission: superreport.report
   reports:
-    description: View Reports!
-    usage: /<command>
+    description: Review open reports
     permission: superreport.reports
   unban:
-    description: Unban a player
-    usage: /<command>
+    description: Lift a player's ban
+    usage: /<command> <player>
     permission: superreport.unban
   unmute:
-    description: Unmute a player
-    usage: /<command>
+    description: Lift a player's mute
+    usage: /<command> <player>
     permission: superreport.unmute
   punish:
     description: Ban or mute a player through the punish menus

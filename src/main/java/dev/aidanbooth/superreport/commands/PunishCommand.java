@@ -16,7 +16,7 @@ public class PunishCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(plugin.getMessageConfig().get("PunishCommand.PlayersOnly"));
+            sender.sendMessage(plugin.getMessageConfig().get("Commands.PlayersOnly"));
             return true;
         }
         if (args.length == 0) {

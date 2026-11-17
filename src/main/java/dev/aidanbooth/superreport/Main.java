@@ -33,7 +33,7 @@ public class Main extends JavaPlugin {
     private BanRunnable br;
 
     private Database database;
-    // TODO: Remove repo access here and route everything through the services
+    // Repositories are read through the services, plus the Discord bot and the review menu, which only read history
     private PlayerRepository players;
     private ReportRepository reports;
     private PunishmentRepository punishments;
@@ -70,6 +70,7 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (pipelineManager != null) pipelineManager.endAll();
         if (db != null) db.shutdown();
         if (database != null) {
             database.close();

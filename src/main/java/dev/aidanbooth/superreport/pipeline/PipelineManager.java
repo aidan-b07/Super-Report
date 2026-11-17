@@ -12,6 +12,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -41,6 +42,13 @@ public class PipelineManager implements Listener {
             result.put(session.getPlayer().getName(), session.currentStepName());
         }
         return result;
+    }
+
+    // Closes every open menu. Used on disable, as once the listener is gone items could be taken out of them
+    public void endAll() {
+        for (PipelineSession<?> session : new ArrayList<>(sessions.values())) {
+            session.end();
+        }
     }
 
     void remove(Player player, PipelineSession<?> session) {

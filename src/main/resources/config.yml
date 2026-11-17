@@ -16,22 +16,6 @@ MySQL:
 # This server's name. Tells servers apart when they share a MySQL database, and shows in Discord embeds as {server}
 ServerName: "Minecraft Server"
 
-DebugMode: false
-
-#####~~REPORT MENU~~#####
-ReportMenu:
-  #Set Size of menu - VERY IMPORTANT NOTE: MUST BE A MULTIPLE OF 9 ie. 27, 36
-  Size: 36
-  #Set name of menu (the text at the top)
-  Name: "Report Menu"
-  #Items of the menu
-  Items:
-    Slot:
-
-    Fill:
-      Material: "gray_stained_glass_pane"
-      Name: ""
-
 #####~~DISCORD BOT~~#####
 # Every text setting below can use the placeholders listed for its message.
 # Anything set to "none" (or left empty) is left out of the embed.
