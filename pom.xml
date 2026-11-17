@@ -134,6 +134,10 @@
                                     </excludes>
                                 </filter>
                             </filters>
+                            <transformers>
+                                <!-- Renames META-INF/services files to the relocated names, so our SLF4J copy finds JdaLogProvider -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
                         </configuration>
                     </execution>
                 </executions>

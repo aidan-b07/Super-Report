@@ -80,18 +80,17 @@ public class MessagesConfig extends ConfigFile {
                 "&cYou will be unbanned again in",
                 "&6{time}"));
         config().set("PermanentBanMessage", Arrays.asList(
-                "&1&l[&9&lSuper-Report&1&l] &c- You have been &4PERMANENTLY &cbanned by &6{banner}&c for",
+                "&1&l[&9&lSuper-Report&1&l] &c- You have been banned by &6{banner}&c for",
                 "&6{reason}",
-                "&cYou can appeal on our discord @&6https://discord.gg/3wqbfmX74P",
-                "&cor buy an unban at our store &6https://discord.gg/3wqbfmX74P"));
+                "&cThis ban is &6permanent"));
 
         // Shown when a muted player tries to chat: {muter}, {reason}, {time}
         config().set("TemporaryMuteMessage", Arrays.asList(
                 "&1&l[&9&lSuper-Report&1&l] &c- You have been muted by &6{muter}&c for",
                 "&6{reason} &cYou will be unmuted again in &6{time}"));
         config().set("PermanentMuteMessage", Arrays.asList(
-                "&1&l[&9&lSuper-Report&1&l] &c- You have been &4PERMANENTLY &cmuted by &6{muter}&c for",
-                "&6{reason} &cYou can appeal on our discord @&6https://discord.gg/3wqbfmX74P"));
+                "&1&l[&9&lSuper-Report&1&l] &c- You have been muted by &6{muter}&c for",
+                "&6{reason} &cThis mute is &6permanent"));
     }
 
     @Override

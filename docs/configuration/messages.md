@@ -91,4 +91,4 @@ These are lists: each entry is one line.
 
 `{banner}` and `{muter}` show `Console` for punishments given from the console.
 
-The default `PermanentBanMessage` and `PermanentMuteMessage` point players to the Super-Report Discord. Change them to your own server's appeal link or store.
+To tell players where to appeal, add a line with your server's Discord or website to any of these.

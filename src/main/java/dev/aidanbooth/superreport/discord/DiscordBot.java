@@ -28,6 +28,10 @@ public class DiscordBot {
         if (!plugin.getConfig().getBoolean("DiscordBot.Enabled")) return;
 
         BotData botData = new BotData(plugin.getConfig());
+        // JDA looks for a logger with the thread's class loader, so it's pointed at ours to find JdaLogProvider
+        Thread thread = Thread.currentThread();
+        ClassLoader previousLoader = thread.getContextClassLoader();
+        thread.setContextClassLoader(DiscordBot.class.getClassLoader());
         try {
             // Light: the bot only sends messages, so it doesn't need to cache members or presences.
             // Connects in the background, so the server doesn't wait for Discord on startup
@@ -35,6 +39,8 @@ public class DiscordBot {
         } catch (InvalidTokenException | IllegalArgumentException e) {
             plugin.getLogger().log(Level.SEVERE, "Couldn't log in to Discord, check DiscordBot.Token in config.yml", e);
             return;
+        } finally {
+            thread.setContextClassLoader(previousLoader);
         }
         embedSender = new EmbedSender(botData, this::ip, plugin.getLogger());
         enabled = true;
