@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>dev.aidanbooth</groupId>
+    <artifactId>SuperReportDebug</artifactId>
+    <version>2.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>SuperReportDebug</name>
+
+    <!-- Test-only tools (/srdebug). Never shipped: only ever installed into the run/ test servers.
+         Compiles against the SuperReport jar in ~/.m2, so run `mvn install` in the main project first. -->
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>8</maven.compiler.release>
+        <server.version>all</server.version>
+        <server.skip>false</server.skip>
+        <run.dir>${project.basedir}/../run</run.dir>
+    </properties>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+            </plugin>
+            <!-- Same install step as the main plugin, see tools/test-server.xml -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>deploy-to-test-server</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${server.skip}</skip>
+                            <target>
+                                <ant antfile="${project.basedir}/../tools/test-server.xml" inheritAll="false">
+                                    <property name="server.version" value="${server.version}"/>
+                                    <property name="server.dir" value="${run.dir}/${server.version}"/>
+                                    <property name="plugin.jar" value="${project.build.directory}/${project.build.finalName}.jar"/>
+                                    <property name="plugin.name" value="${project.artifactId}.jar"/>
+                                    <property name="eula.file" value="${run.dir}/eula.txt"/>
+                                    <property name="work.dir" value="${project.build.directory}"/>
+                                </ant>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.8.8-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.md-5</groupId>
+                    <artifactId>bungeecord-chat</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- The server loads SuperReport itself (depend in plugin.yml); only its classes are needed to compile -->
+        <dependency>
+            <groupId>dev.aidanbooth</groupId>
+            <artifactId>SuperReport</artifactId>
+            <version>2.0-SNAPSHOT</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+</project>

@@ -13,6 +13,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -31,6 +32,15 @@ public class PipelineManager implements Listener {
         PipelineSession<T> session = new PipelineSession<>(plugin, this, player, pipeline, data);
         sessions.put(player.getUniqueId(), session);
         session.open();
+    }
+
+    // Debug only: "player name -> current step" for every open session
+    public Map<String, String> describeSessions() {
+        Map<String, String> result = new TreeMap<>();
+        for (PipelineSession<?> session : sessions.values()) {
+            result.put(session.getPlayer().getName(), session.currentStepName());
+        }
+        return result;
     }
 
     void remove(Player player, PipelineSession<?> session) {

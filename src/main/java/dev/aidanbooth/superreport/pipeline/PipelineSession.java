@@ -41,6 +41,14 @@ public class PipelineSession<T> implements InventoryHolder {
         return currentInventory;
     }
 
+    Player getPlayer() {
+        return player;
+    }
+
+    String currentStepName() {
+        return current.getClass().getSimpleName();
+    }
+
     boolean isWaitingForChat() {
         return active && currentInventory == null;
     }

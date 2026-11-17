@@ -1,0 +1,13 @@
+name: SuperReportDebug
+author: Superbility
+version: ${project.version}
+main: dev.aidanbooth.superreportdebug.SuperReportDebug
+depend: [SuperReport]
+commands:
+  srdebug:
+    description: Test tools for creating and clearing Super-Report data
+    usage: /<command>
+permissions:
+  superreport.debug:
+    description: Allows use of /srdebug, which can delete every report and punishment
+    default: op
