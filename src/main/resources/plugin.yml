@@ -21,6 +21,10 @@ commands:
     description: Lift a player's mute
     usage: /<command> <player>
     permission: superreport.unmute
+  superreport:
+    description: Show the Super-Report commands you can use
+    usage: /<command> [help|reload]
+    permission: superreport.help
   punish:
     description: Ban or mute a player through the punish menus
     usage: /<command> <player>
@@ -31,6 +35,12 @@ commands:
       - tempmute
     permission: superreport.punish
 permissions:
+  superreport.help:
+    description: Allows use of '/superreport', which lists the commands the player can use. Typically used by everyone
+    default: true
+  superreport.reload:
+    description: Allows use of '/superreport reload', which reads every config file again. Typically used by admins
+    default: op
   superreport.report:
     description: Allows use of the '/report' command. Typically used by players
     default: true

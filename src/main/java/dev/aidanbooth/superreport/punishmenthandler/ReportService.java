@@ -34,8 +34,6 @@ public class ReportService {
     private final Pipeline<ReportDraft> reportPipeline;
     private final Pipeline<PunishmentDraft> punishmentPipeline;
 
-    private final String successMessage;
-    private final String errorMessage;
 
     public enum ReportCheck { ALLOWED, NOT_ONLINE, SELF_REPORT, ALREADY_REPORTED, ERROR }
 
@@ -47,8 +45,6 @@ public class ReportService {
         this.reportPipeline = new Pipeline<>(this::submit, new SelectReportReasonStep());
         this.punishmentPipeline = new PunishmentPipeline(this::resolve);
 
-        this.successMessage = plugin.getMessageConfig().get("ReportCommand.ReportSuccessful");
-        this.errorMessage = plugin.getMessageConfig().get("ReportCommand.ReportError");
     }
 
     public void openReportMenu(Player reporter, UUID reported, String reportedName) {
@@ -68,12 +64,12 @@ public class ReportService {
             Report report = Report.open(draft.getReporter(), draft.getReported(), draft.getReason(), plugin.getServerName());
             reports.add(report);
             plugin.getDiscordBot().sendReportEmbed(report);
-            if (reporter != null) reporter.sendMessage(successMessage);
+            if (reporter != null) reporter.sendMessage(plugin.getMessageConfig().get("ReportCommand.ReportSuccessful"));
             notifyStaff(report);
         } catch (SQLException e) {
             plugin.getServer().getConsoleSender().sendMessage(ErrorCodes.getTemplate("001"));
             e.printStackTrace();
-            if (reporter != null) reporter.sendMessage(errorMessage);
+            if (reporter != null) reporter.sendMessage(plugin.getMessageConfig().get("ReportCommand.ReportError"));
         }
     }
     public void resolve(PunishmentDraft draft) {

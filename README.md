@@ -51,12 +51,16 @@ It works out of the box with a local SQLite database. To share data between serv
 | `/mute <player>`, `/tempmute <player>` | Mute through the menus, starting at the reason | `superreport.punish` |
 | `/unban <player>` | Lift a ban | `superreport.unban` |
 | `/unmute <player>` | Lift a mute | `superreport.unmute` |
+| `/superreport` | List the Super-Report commands you can use | `superreport.help` |
+| `/superreport reload` | Read every config file again and reconnect the Discord bot | `superreport.reload` |
 
 ## Permissions
 
 | Permission | Default | What it does |
 |---|---|---|
 | `superreport.report` | Everyone | Use `/report` |
+| `superreport.help` | Everyone | Use `/superreport` |
+| `superreport.reload` | Op | Use `/superreport reload` |
 | `superreport.reports` | Op | Use `/reports` |
 | `superreport.punish` | Op | Use `/punish`, `/ban` and `/mute` |
 | `superreport.unban` | Op | Use `/unban` |

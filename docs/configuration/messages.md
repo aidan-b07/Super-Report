@@ -23,6 +23,12 @@ Each message can use the placeholders listed next to it. In the messages below:
 | Key | Placeholders | When it's sent |
 |---|---|---|
 | `Commands.PlayersOnly` | | The console runs a command that needs a player |
+| `Commands.NoPermission` | | Someone without permission runs `/superreport reload` |
+| `SuperReport.HelpHeader` | `{version}` | The first line of `/superreport` |
+| `SuperReport.HelpLine` | `{command}`, `{description}` | Once for each command in `/superreport` that the player can use |
+| `SuperReport.Reloaded` | | `/superreport reload` worked |
+| `SuperReport.RestartForDatabase` | | After a reload where the `MySQL` settings changed |
+| `SuperReport.ReloadFailed` | | The reload went wrong. The console has the details |
 | `Updates.Available` | `{latest}`, `{current}` | To staff with `superreport.updates` when they join, if a newer version is out |
 | `Updates.Download` | `{platform}`, `{link}` | Sent after `Updates.Available`, once for each place the new version can be downloaded |
 

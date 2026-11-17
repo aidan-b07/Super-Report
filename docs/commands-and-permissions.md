@@ -12,6 +12,8 @@
 | `/mute <player>`, `/tempmute <player>` | Same as `/punish`, starting at the mute reasons | `superreport.punish` |
 | `/unban <player>` | Lifts a ban | `superreport.unban` |
 | `/unmute <player>` | Lifts a mute | `superreport.unmute` |
+| `/superreport` | Lists the Super-Report commands you can use | `superreport.help` |
+| `/superreport reload` | Reads every config file again | `superreport.reload` |
 
 ### Reporting
 - You can only report players who are online, either on this server or on another one sharing the database (see [Networks](networks.md)).
@@ -35,11 +37,18 @@ Every punishment goes through the same menus: ban or mute, a reason from [the re
 ### Lifting
 `/unban` and `/unmute` lift the punishment early. It stays in the player's history, marked as lifted. A punishment that has already run out counts as not banned or not muted.
 
+### Reloading
+`/superreport reload` reads `config.yml`, `Messages.yml` and the three menu files again, and reconnects the Discord bot with its new settings. Menus already open keep showing what they opened with until they're reopened.
+
+The database connection isn't changed by a reload. If the `MySQL` settings changed, you're told to restart the server for them to apply. `CheckForUpdates` also needs a restart.
+
 ## Permissions
 
 | Permission | Default | What it does |
 |---|---|---|
 | `superreport.report` | Everyone | Use `/report` |
+| `superreport.help` | Everyone | Use `/superreport` |
+| `superreport.reload` | Op | Use `/superreport reload` |
 | `superreport.reports` | Op | Use `/reports` |
 | `superreport.punish` | Op | Use `/punish`, `/ban`, `/mute`, `/tempban` and `/tempmute` |
 | `superreport.unban` | Op | Use `/unban` |

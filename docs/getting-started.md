@@ -16,7 +16,7 @@
    | `Ban-Reasons.yml`, `Mute-Reasons.yml` | The ban and mute reason menus. See [Menus](configuration/menus.md) |
    | `database.db` | Your data, when using the built-in SQLite database |
 
-3. Change what you want, then restart.
+3. Change what you want, then run `/superreport reload` (or restart). Database changes need a restart.
 
 That's all a single server needs. To share data between servers, see [Networks](networks.md). To post to Discord, see [Discord bot](discord.md).
 
@@ -29,4 +29,4 @@ Reasons are the exception. If you delete a reason from a menu, it stays deleted.
 - **Your files:** keep them. Missing settings are added back as described above. To get 2.0's new menus and messages instead of your old ones, delete those files and restart.
 - **Your data:** 2.0 uses a new database layout and leaves the 1.x tables (`superreport_playerdata`, `superreport_reports_active` and so on) untouched. 1.x reports and punishments aren't brought across, so open reports and active bans from 1.x won't show up in 2.0.
 - **Permissions:** the same names are used as in 1.x, including `superreport.banbypass` and `superreport.mutebypass`.
-- **Removed:** `/superreport` and `superreport.help` from 1.x are no longer part of the plugin.
+- **`/superreport`** is back with `help` and a new `reload`.

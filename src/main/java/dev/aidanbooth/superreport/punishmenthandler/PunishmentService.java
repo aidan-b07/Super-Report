@@ -98,7 +98,8 @@ public class PunishmentService {
                 .replace("{action}", type == PunishmentType.BAN ? "banned" : "muted")
                 .replace("{reason}", reason == null ? "" : reason);
     }
-    private void loadMessages() {
+    // The ban screen and mute notice are built once, so /superreport reload calls this again
+    public void loadMessages() {
         this.permanentBanMessage = plugin.getMessageConfig().lines("PermanentBanMessage");
         this.temporaryBanMessage = plugin.getMessageConfig().lines("TemporaryBanMessage");
         this.permanentMuteMessage = plugin.getMessageConfig().lines("PermanentMuteMessage");

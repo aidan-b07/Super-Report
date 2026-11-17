@@ -1,6 +1,7 @@
 package dev.aidanbooth.superreport;
 
 import dev.aidanbooth.superreport.commands.PunishCommand;
+import dev.aidanbooth.superreport.commands.SuperReportCommand;
 import dev.aidanbooth.superreport.commands.redeem.UnbanCommand;
 import dev.aidanbooth.superreport.commands.redeem.UnmuteCommand;
 import dev.aidanbooth.superreport.commands.reports.ReportsCommand;
@@ -128,6 +129,32 @@ public class Main extends JavaPlugin {
         mrc = new MuteReasonsConfig();
         rmc = new ReportMenuConfig();
     }
+
+    public enum ReloadResult { RELOADED, RESTART_FOR_DATABASE, FAILED }
+
+    // /superreport reload: every file is read again and the Discord bot reconnects.
+    // The database connection stays as it is, as swapping it with menus open could lose data
+    public ReloadResult reload() {
+        String databaseBefore = databaseSettings();
+        try {
+            reloadConfig();
+            setupConfigs();
+            punishmentService.loadMessages();
+            // Some commands keep their messages, so they're made again with the new ones
+            registerCommands();
+            if (db != null) db.shutdown();
+            db = new DiscordBot();
+        } catch (RuntimeException e) {
+            getLogger().log(Level.SEVERE, "Couldn't reload Super-Report", e);
+            return ReloadResult.FAILED;
+        }
+        return databaseBefore.equals(databaseSettings()) ? ReloadResult.RELOADED : ReloadResult.RESTART_FOR_DATABASE;
+    }
+
+    private String databaseSettings() {
+        return String.valueOf(getConfig().getConfigurationSection("MySQL") == null ? "" : getConfig().getConfigurationSection("MySQL").getValues(true));
+    }
+
     private boolean setupDatabase() {
         if (getConfig().getBoolean("MySQL.MySqlEnabled")) {
             database = Database.mysql(
@@ -172,5 +199,8 @@ public class Main extends JavaPlugin {
         getCommand("unban").setExecutor(new UnbanCommand());
         getCommand("unmute").setExecutor(new UnmuteCommand());
         getCommand("punish").setExecutor(new PunishCommand());
+        SuperReportCommand superReport = new SuperReportCommand(this);
+        getCommand("superreport").setExecutor(superReport);
+        getCommand("superreport").setTabCompleter(superReport);
     }
 }

@@ -28,6 +28,14 @@ public class MessagesConfig extends ConfigFile {
         config().set("Prefix", "&1&l[&9&lSuper-Report&1&l] ");
 
         config().set("Commands.PlayersOnly", "{prefix}&c- Only players can use this command!");
+        config().set("Commands.NoPermission", "{prefix}&c- You don't have permission to do that!");
+
+        // /superreport. HelpLine is sent once for each command the player can use
+        config().set("SuperReport.HelpHeader", "{prefix}&e- Super-Report &6{version} &ecommands:");
+        config().set("SuperReport.HelpLine", "&7  » &6{command} &7- {description}");
+        config().set("SuperReport.Reloaded", "{prefix}&a- Super-Report has been reloaded!");
+        config().set("SuperReport.RestartForDatabase", "{prefix}&e- The database settings changed. Restart the server to use them.");
+        config().set("SuperReport.ReloadFailed", "{prefix}&c- Super-Report couldn't be reloaded! Check the console for errors.");
 
         // To admins with superreport.updates when they join: Available once, then Download once for each place to get it
         config().set("Updates.Available", "{prefix}&e- Super-Report &6{latest} &eis out! You're on &6{current}&e. Download it from:");

@@ -7,6 +7,7 @@ import dev.aidanbooth.superreport.database.model.Report;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.exceptions.InvalidTokenException;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.SQLException;
 import java.util.Optional;
@@ -21,6 +22,7 @@ public class DiscordBot {
     private EmbedSender embedSender;
     private JDA api;
     private boolean enabled = false;
+    private BukkitTask expiryCheck;
 
     public DiscordBot() {
         if (!plugin.getConfig().getBoolean("DiscordBot.Enabled")) return;
@@ -37,7 +39,7 @@ public class DiscordBot {
         embedSender = new EmbedSender(botData, this::ip, plugin.getLogger());
         enabled = true;
         // Every minute, so a ban's embed shows EXPIRED soon after it runs out
-        plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, this::markExpiredPunishments, 1200L, 1200L);
+        expiryCheck = plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, this::markExpiredPunishments, 1200L, 1200L);
     }
 
     public void sendReportEmbed(Report report) {
@@ -90,6 +92,7 @@ public class DiscordBot {
 
     // Stops JDA's threads so reloads and /stop don't hang
     public void shutdown() {
+        if (expiryCheck != null) expiryCheck.cancel();
         if (api != null) api.shutdown();
         enabled = false;
     }
