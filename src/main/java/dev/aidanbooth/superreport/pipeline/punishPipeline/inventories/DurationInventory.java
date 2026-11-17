@@ -1,6 +1,8 @@
 package dev.aidanbooth.superreport.pipeline.punishPipeline.inventories;
 
 import com.cryptomorin.xseries.XMaterial;
+import dev.aidanbooth.superreport.pipeline.data.PunishmentDraft;
+import dev.aidanbooth.superreport.utils.GetDuration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.Inventory;
@@ -11,8 +13,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.Arrays;
 
 public class DurationInventory {
-    public Inventory create(InventoryHolder holder) {
-        Inventory inventory = Bukkit.createInventory(holder, 45, ChatColor.GOLD + "Select Time");
+    public Inventory create(InventoryHolder holder, PunishmentDraft draft) {
+        Inventory inventory = Bukkit.createInventory(holder, 45, ChatColor.GOLD + GetDuration.getDuration(draft.getDuration()));
         addItems(inventory);
         return inventory;
     }
@@ -130,7 +132,7 @@ public class DurationInventory {
 
         ItemStack count = XMaterial.NETHER_STAR.parseItem();
         ItemMeta countMeta = count.getItemMeta();
-        countMeta.setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "0");
+        countMeta.setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "Click here to confirm!");
         count.setItemMeta(countMeta);
 
 

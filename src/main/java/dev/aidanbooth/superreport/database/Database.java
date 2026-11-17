@@ -64,13 +64,18 @@ public final class Database implements AutoCloseable {
     }
 
     private Connection connection() throws SQLException {
-        if (connection == null || connection.isClosed() || !connection.isValid(VALIDATION_TIMEOUT_SECONDS)) {
+        if (connection == null || connection.isClosed() || !isAlive(connection)) {
             closeQuietly();
             connection = username == null
                     ? DriverManager.getConnection(url)
                     : DriverManager.getConnection(url, username, password);
         }
         return connection;
+    }
+
+    // SQLite is a local file and never times out. 1.8's bundled sqlite-jdbc also predates JDBC 4 and has no isValid()
+    private boolean isAlive(Connection conn) throws SQLException {
+        return username == null || conn.isValid(VALIDATION_TIMEOUT_SECONDS);
     }
 
     public synchronized int update(String sql, Object... params) throws SQLException {

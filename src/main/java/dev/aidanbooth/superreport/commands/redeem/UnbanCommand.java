@@ -30,6 +30,8 @@ public class UnbanCommand implements CommandExecutor {
             if (plugin.getPunishments().archive(PunishmentType.BAN, player.getUniqueId())) {
                 sender.sendMessage(successMessage);
                 return true;
+            } else {
+                sender.sendMessage(failMessage);
             }
         } catch (SQLException e) {
             e.printStackTrace();

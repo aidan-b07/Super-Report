@@ -27,9 +27,13 @@ public class MessagesConfig extends ConfigFile {
         config().set("ReportCommand.ReportError", "&1&l[&9&lSuper-Report&1&l] &c- There was an error while submitting your report!");
         config().set("ReportCommand.ReportSuccessful", "&1&l[&9&lSuper-Report&1&l] &a- Your report has been submitted! Thank you for helping to make our community a better place :)");
         config().set("UnbanCommand.Successful", "&1&l[&9&lSuper-Report&1&l] &a- Player unbanned successfully!");
+        config().set("UnbanCommand.PlayerNotBanned", "&1&l[&9&lSuper-Report&1&l] &a- Player {player} isn't banned!");
         config().set("UnbanCommand.Fail", "&1&l[&9&lSuper-Report&1&l] &c- Couldn't unban player!");
         config().set("UnmuteCommand.Successful", "&1&l[&9&lSuper-Report&1&l] &a- Player unmuted successfully!");
-        config().set("UnmuteCommand.Fail", "&1&l[&9&lSuper-Report&1&l] &c- Player unmuted successfully!");
+        config().set("UnmuteCommand.PlayerNotMuted", "&1&l[&9&lSuper-Report&1&l] &a- Player {player} isn't muted!");
+        config().set("UnmuteCommand.Fail", "&1&l[&9&lSuper-Report&1&l] &c- Couldn't unmute player!");
+        config().set("Punishment.Bypassed", "&1&l[&9&lSuper-Report&1&l] &c- &6{player} &ccan't be {action}, they have the bypass permission. The report is still open.");
+        config().set("Punishment.Error", "&1&l[&9&lSuper-Report&1&l] &c- The punishment couldn't be saved. The report is still open.");
 
         List<String> tempBanMessageDefault = new ArrayList<>();
         tempBanMessageDefault.add("&1&l[&9&lSuper-Report&1&l] &c- You have been banned by &6{banner}&c for");

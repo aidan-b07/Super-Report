@@ -16,7 +16,7 @@ public class DurationStep implements PipelineStep<PunishmentDraft> {
 
     @Override
     public Inventory open(InventoryHolder holder, Player player, PunishmentDraft data) {
-        return durationInventory.create(holder);
+        return durationInventory.create(holder, data);
     }
 
     private final HashMap<Integer, Integer> ttv = new HashMap<Integer, Integer>() {{

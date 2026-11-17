@@ -8,11 +8,7 @@ import org.bukkit.inventory.InventoryHolder;
 
 public interface PipelineStep<T> {
 
-    /**
-     * Build this step's menu with Bukkit.createInventory(holder, size, title)
-     * so clicks are routed back to the session.
-     * Return null for a step that waits for chat input instead.
-     */
+    // Create the menu with this holder so clicks reach the session. Return null to wait for chat input
     Inventory open(InventoryHolder holder, Player player, T data);
 
     // Only called for clicks in the top (menu) inventory; the event is already cancelled

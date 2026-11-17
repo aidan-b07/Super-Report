@@ -3,6 +3,7 @@ package dev.aidanbooth.superreport.pipeline.punishPipeline.inventories;
 import com.cryptomorin.xseries.XMaterial;
 import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.database.model.PlayerData;
+import dev.aidanbooth.superreport.utils.PlayerUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.Inventory;
@@ -23,10 +24,18 @@ public class ControlPanelInventory {
 
         try {
             Optional<PlayerData> reported = plugin.getPlayerData().find(reportedUUID);
-            reported.ifPresent(playerData -> addProfile(controlPanelInv, reportedUUID, playerData, true));
+            if(reported.isPresent()) {
+                addProfile(controlPanelInv, reportedUUID, reported.get(), true);
+            } else {
+                addProfileError(controlPanelInv, reportedUUID, true);
+            }
 
             Optional<PlayerData> reporter = plugin.getPlayerData().find(reporterUUID);
-            reporter.ifPresent(playerData -> addProfile(controlPanelInv, reporterUUID, playerData, false));
+            if(reporter.isPresent()) {
+                addProfile(controlPanelInv, reporterUUID, reporter.get(), false);
+            } else {
+                addProfileError(controlPanelInv, reporterUUID, false);
+            }
 
         } catch (SQLException e) {
             // TODO Set error items
@@ -75,6 +84,34 @@ public class ControlPanelInventory {
             inv.setItem(16, reported);
         }
     } //Reported and reporter profile
+    // TODO Clean up
+    public void addProfileError(Inventory inv, UUID uuid, boolean red) {
+        ItemStack reported = XMaterial.BEDROCK.parseItem();
+        ItemMeta reportedMeta = reported.getItemMeta();
+
+                /*
+                Lore(0) = Reported UUID
+                Lore(1) = Reporter Name
+                Lore(2) = Reporter UUID
+                Lore(3) = Date/Time
+                Lore(4) = Reason
+                 */
+
+        reportedMeta.setDisplayName(ChatColor.GOLD + "Reported - " + PlayerUtils.GetUsername(uuid));
+        reportedMeta.setLore(Arrays.asList(
+                String.valueOf(uuid),
+                ChatColor.GOLD + "Reports - " + ChatColor.GRAY + "N/A",
+                ChatColor.GOLD + "Reported - " + ChatColor.GRAY + "N/A",
+                ChatColor.GOLD + "Online - " + ChatColor.GRAY + "N/A",
+                ChatColor.GOLD + "Bans - " + ChatColor.GRAY + "N/A",
+                ChatColor.GOLD + "Mutes - " + ChatColor.GRAY + "N/A"));
+        reported.setItemMeta(reportedMeta);
+        if(red) {
+            inv.setItem(10, reported);
+        } else {
+            inv.setItem(16, reported);
+        }
+    }
 
     // TODO Make item creator helper method in utils class
     public void addPunishmentItem(Inventory inv) {
