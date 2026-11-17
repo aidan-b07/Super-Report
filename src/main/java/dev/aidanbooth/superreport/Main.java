@@ -8,6 +8,7 @@ import dev.aidanbooth.superreport.configs.BanReasonsConfig;
 import dev.aidanbooth.superreport.configs.MessagesConfig;
 import dev.aidanbooth.superreport.configs.MuteReasonsConfig;
 import dev.aidanbooth.superreport.configs.ReportMenuConfig;
+import dev.aidanbooth.superreport.discord.DiscordBot;
 import dev.aidanbooth.superreport.pipeline.PipelineManager;
 import dev.aidanbooth.superreport.punishmenthandler.*;
 import dev.aidanbooth.superreport.commands.report.ReportCommand;
@@ -67,6 +68,7 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (db != null) db.shutdown();
         if (database != null) {
             database.close();
         }

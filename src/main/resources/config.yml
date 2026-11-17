@@ -30,64 +30,97 @@ ReportMenu:
       Name: ""
 
 #####~~DISCORD BOT~~#####
+# Every text setting below can use the placeholders listed for its message.
+# Anything set to "none" (or left empty) is left out of the embed.
 DiscordBot:
   Enabled: false
   Token: "TOKENHERE"
-  ServerID: "SERVERIDHERE"
+  # Shown in each embed's footer as {server}
+  ServerName: "Minecraft Server"
+
+  # Placeholders: {reported.name} {reported.uuid} {reported.head} {reported.ip}
+  #               {reporter.name} {reporter.uuid} {reporter.head} {reporter.ip}
+  #               {reason} {report.id} {server}
   ReportMessage:
     ChannelID: "CHANNELIDHERE"
     Layout:
-      Title: "New Report"
-      Author: "Report Bot"
-      Color: "FF0000"
-      #This is just the message that is entered outside the embed. Use the format "<@&ROLE_ID>" to ping a role
-      Message: "Hey <@&739825208948555870>, there's a new report!"
-      Thumbnail: "https://i.imgur.com/175t1FU.png"
+      # Sent above the embed. To ping a role use "<@&ROLE_ID>", e.g. "<@&123456789012345678>"
+      Message: ""
+      Color: "F1C40F"
+      Author: "New Report"
+      AuthorIcon: "{reporter.head}"
+      Title: "{reported.name} has been reported"
+      Thumbnail: "{reported.head}"
       Description:
-        - '**Reported Player Name** - {reported.name}'
-        - "**Reported Player UUID** - {reported.uuid}"
-        - "**Reported Player Ip** - {reported.ip}"
-        - ''
-        - "**Reporter Player Name** - {reporter.name}"
-        - "**Reporter Player UUID** - {reporter.uuid}"
-        - "**Reporter Player Ip** - {reporter.ip}"
-        - ''
-        - "**Reason Reported** - {reason}"
+        - "A player has sent a report. Review it in-game with `/reports`."
+      Fields:
+        - Name: "Reported Player"
+          Value: "{reported.name}"
+          Inline: true
+        - Name: "Reported By"
+          Value: "{reporter.name}"
+          Inline: true
+        - Name: "Report ID"
+          Value: "`#{report.id}`"
+          Inline: true
+        - Name: "Reason"
+          Value: "{reason}"
+          Inline: false
+      Footer: "{server} | Super-Report"
+      Timestamp: true
+
+  # Placeholders: {banned.name} {banned.uuid} {banned.head} {banned.ip}
+  #               {punisher.name} {punisher.uuid} {punisher.head} {punisher.ip}
+  #               {ban.reason} {ban.duration} {ban.expires} {server}
   BanMessage:
     ChannelID: "CHANNELIDHERE"
     Layout:
-      Title: "Player Banned"
-      Author: "Report Bot"
-      Color: "FF0000"
-      Message: "Hey <@739825208948555870>, there's a new ban!"
-      Thumbnail: "https://i.imgur.com/175t1FU.png"
-      Description:
-        - '**Banned Player Name** - {banned.name}'
-        - '**Banned Player UUID** - {banned.uuid}'
-        - '**Banned Player Ip** - {banned.ip}'
-        - ''
-        - '**Punisher Name** - {punisher.name}'
-        - '**Punisher UUID** - {punisher.uuid}'
-        - '**Punisher Ip** - {punisher.ip}'
-        - ''
-        - '**Duration** - {ban.duration}'
-        - '**Reason** - {ban.reason}'
+      Message: ""
+      Color: "E74C3C"
+      Author: "Banned by {punisher.name}"
+      AuthorIcon: "{punisher.head}"
+      Title: "{banned.name} has been banned"
+      Thumbnail: "{banned.head}"
+      Fields:
+        - Name: "Player"
+          Value: "{banned.name}"
+          Inline: true
+        - Name: "Duration"
+          Value: "{ban.duration}"
+          Inline: true
+        - Name: "Expires"
+          Value: "{ban.expires}"
+          Inline: true
+        - Name: "Reason"
+          Value: "{ban.reason}"
+          Inline: false
+      Footer: "{server} | Super-Report"
+      Timestamp: true
+
+  # Placeholders: {muted.name} {muted.uuid} {muted.head} {muted.ip}
+  #               {punisher.name} {punisher.uuid} {punisher.head} {punisher.ip}
+  #               {mute.reason} {mute.duration} {mute.expires} {server}
   MuteMessage:
     ChannelID: "CHANNELIDHERE"
     Layout:
-      Title: "Player Muted"
-      Author: "Report Bot"
-      Color: "FF0000"
-      Message: "Hey everyone, there's a new mute!"
-      Thumbnail: "https://i.imgur.com/175t1FU.png"
-      Description:
-        - '**Muted Player Name** - {muted.name}'
-        - '**Muted Player UUID** - {muted.uuid}'
-        - '**Muted Player Ip** - {muted.ip}'
-        - ''
-        - '**Punisher Name** - {punisher.name}'
-        - '**Punisher UUID** - {punisher.uuid}'
-        - '**Punisher Ip** - {punisher.ip}'
-        - ''
-        - '**Duration** - {mute.duration}'
-        - '**Reason** - {mute.reason}'
+      Message: ""
+      Color: "E67E22"
+      Author: "Muted by {punisher.name}"
+      AuthorIcon: "{punisher.head}"
+      Title: "{muted.name} has been muted"
+      Thumbnail: "{muted.head}"
+      Fields:
+        - Name: "Player"
+          Value: "{muted.name}"
+          Inline: true
+        - Name: "Duration"
+          Value: "{mute.duration}"
+          Inline: true
+        - Name: "Expires"
+          Value: "{mute.expires}"
+          Inline: true
+        - Name: "Reason"
+          Value: "{mute.reason}"
+          Inline: false
+      Footer: "{server} | Super-Report"
+      Timestamp: true

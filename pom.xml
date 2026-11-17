@@ -60,6 +60,43 @@
                                     <pattern>com.cryptomorin.xseries.</pattern>
                                     <shadedPattern>dev.aidanbooth.superreport.libs.xseries.</shadedPattern>
                                 </relocation>
+                                <!-- JDA and its libraries, so another plugin's copy (DiscordSRV etc.) can't clash with ours -->
+                                <relocation>
+                                    <pattern>net.dv8tion.</pattern>
+                                    <shadedPattern>dev.aidanbooth.superreport.libs.dv8tion.</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.neovisionaries.</pattern>
+                                    <shadedPattern>dev.aidanbooth.superreport.libs.neovisionaries.</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>okhttp3.</pattern>
+                                    <shadedPattern>dev.aidanbooth.superreport.libs.okhttp3.</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>okio.</pattern>
+                                    <shadedPattern>dev.aidanbooth.superreport.libs.okio.</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>kotlin.</pattern>
+                                    <shadedPattern>dev.aidanbooth.superreport.libs.kotlin.</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.fasterxml.jackson.</pattern>
+                                    <shadedPattern>dev.aidanbooth.superreport.libs.jackson.</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>gnu.trove.</pattern>
+                                    <shadedPattern>dev.aidanbooth.superreport.libs.trove.</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.commons.collections4.</pattern>
+                                    <shadedPattern>dev.aidanbooth.superreport.libs.collections4.</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.slf4j.</pattern>
+                                    <shadedPattern>dev.aidanbooth.superreport.libs.slf4j.</shadedPattern>
+                                </relocation>
                             </relocations>
                             <filters>
                                 <!-- From XSeries we only want XMaterial and the one base class it depends on -->
@@ -69,6 +106,20 @@
                                         <include>com/cryptomorin/xseries/XMaterial*.class</include>
                                         <include>com/cryptomorin/xseries/base/XBase*.class</include>
                                     </includes>
+                                </filter>
+                                <!-- minimizeJar only keeps classes it can see being used. These load some classes
+                                     by name at runtime, so keep them whole -->
+                                <filter>
+                                    <artifact>net.dv8tion:JDA</artifact>
+                                    <includes><include>**</include></includes>
+                                </filter>
+                                <filter>
+                                    <artifact>com.fasterxml.jackson.core:*</artifact>
+                                    <includes><include>**</include></includes>
+                                </filter>
+                                <filter>
+                                    <artifact>com.squareup.okhttp3:*</artifact>
+                                    <includes><include>**</include></includes>
                                 </filter>
                                 <filter>
                                     <artifact>*:*</artifact>
@@ -130,16 +181,6 @@
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
-        <!--
-            JDA 4.x was only ever published here and the repo is now offline. The build uses the copy
-            already in ~/.m2; Maven needs this entry to keep trusting it. A fresh machine cannot
-            resolve JDA 4 any more (JDA 5+ is on Maven Central).
-        -->
-        <repository>
-            <id>dv8tion</id>
-            <name>m2-dv8tion</name>
-            <url>https://m2.dv8tion.net/releases</url>
-        </repository>
     </repositories>
 
     <dependencies>
@@ -161,21 +202,21 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>4.2.1_265</version>
+            <version>6.7.0</version>
             <exclusions>
-                <!-- Annotations only, not needed at runtime -->
-                <exclusion>
-                    <groupId>com.google.code.findbugs</groupId>
-                    <artifactId>jsr305</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jetbrains</groupId>
-                    <artifactId>annotations</artifactId>
-                </exclusion>
-                <!-- Voice audio codec + ~3 MB of native libraries; the bot only sends messages -->
+                <!-- Voice only (audio codec, its native libraries and voice encryption). The bot only sends messages -->
                 <exclusion>
                     <groupId>club.minnced</groupId>
                     <artifactId>opus-java</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.crypto.tink</groupId>
+                    <artifactId>tink</artifactId>
+                </exclusion>
+                <!-- Annotations only, not needed at runtime -->
+                <exclusion>
+                    <groupId>org.jetbrains</groupId>
+                    <artifactId>annotations</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
