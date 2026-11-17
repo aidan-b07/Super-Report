@@ -5,7 +5,7 @@ import java.util.List;
 
 public class ReportMenuConfig extends ConfigFile {
     public ReportMenuConfig() {
-        setup("Ban-Reasons.yml");
+        setup("ReportMenu.yml");
     }
 
     @Override
