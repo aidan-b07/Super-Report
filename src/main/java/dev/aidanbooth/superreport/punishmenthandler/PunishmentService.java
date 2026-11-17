@@ -21,6 +21,7 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 import static dev.aidanbooth.superreport.utils.ConfigUtils.Colour;
 
@@ -60,6 +61,21 @@ public class PunishmentService {
     public boolean canBypass(Punishment punishment) {
         Player target = Bukkit.getPlayer(punishment.player());
         return target != null && target.hasPermission(punishment.type().bypassPermission());
+    }
+
+    public enum LiftResult { LIFTED, NOT_PUNISHED, ERROR }
+
+    // Used by /unban and /unmute. An expired punishment counts as not punished, and is archived on the way
+    public LiftResult lift(PunishmentType type, UUID player) {
+        try {
+            Optional<Punishment> active = plugin.getPunishments().find(type, player);
+            if (!active.isPresent()) return LiftResult.NOT_PUNISHED;
+            plugin.getPunishments().archive(type, player);
+            return active.get().isExpired() ? LiftResult.NOT_PUNISHED : LiftResult.LIFTED;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return LiftResult.ERROR;
+        }
     }
 
     // Debug only: removes every punishment for every player
