@@ -183,3 +183,9 @@ Without `-Dserver.skip=true`, the build also downloads a Paper test server into 
 ## Support
 
 Found a bug or have an idea? [Open an issue](https://github.com/aidan-b07/Super-Report/issues) or ask in the [support Discord](https://discord.gg/3wqbfmX74P).
+
+## License
+
+Super-Report is free and its source is open. You can use it on any server, including ones that make money, and you can fork and change it.
+
+You can't sell it or a fork of it, or re-upload the original. Forks need their own name and a link back here. See [LICENSE](LICENSE) for the full terms.

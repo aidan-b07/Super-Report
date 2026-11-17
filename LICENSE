@@ -1,0 +1,53 @@
+Super-Report License
+
+Copyright (c) 2021-2026 Aidan Booth ("Superbility")
+
+This license is based on the MIT License, with added conditions that keep
+Super-Report and its forks free and stop the original from being re-uploaded.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, merge and publish the Software, and to distribute modified
+versions of it, subject to the following conditions:
+
+1. Notice. The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+
+2. No selling. The Software, and any work based on it, may not be sold,
+   licensed for a fee, placed behind a paywall, or offered in exchange for
+   payment, donations or any other compensation, either on its own or as part
+   of a paid product, bundle or service. This condition does not restrict
+   running the Software on a server or network that earns money, for example
+   through ranks, stores or donations.
+
+3. No re-uploading the original. Only the copyright holder may distribute
+   the Software unmodified, or with only trivial changes such as a new name,
+   repackaging, recompiling or changed configuration. Anyone else may share
+   links to the copyright holder's official downloads.
+
+4. Forks. You may distribute a modified version of the Software (a "fork")
+   if it makes meaningful changes to the source code, and:
+   a. it uses a name clearly different from "Super-Report" and does not use
+      Super-Report's name, logo or other branding to identify itself;
+   b. it states that it is based on Super-Report and links to
+      https://github.com/aidan-b07/Super-Report;
+   c. it does not suggest that it is made, endorsed or supported by the
+      copyright holder; and
+   d. it is distributed under this same license, with these same conditions.
+
+5. Contributions. Any contribution submitted to the Software's official
+   repository is licensed under this same license.
+
+6. Ending. If you break any of these conditions, the permissions granted by
+   this license end for you automatically.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Third-party libraries included in Super-Report's releases keep their own
+licenses, including JDA (Apache License 2.0) and XSeries (MIT License).
