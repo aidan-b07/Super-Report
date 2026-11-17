@@ -64,6 +64,9 @@ public class Main extends JavaPlugin {
         // Other servers sharing the database can ban players here too
         if(getConfig().getBoolean("MySQL.MySqlEnabled")) br = new BanRunnable();
         db = new DiscordBot();
+        if (getConfig().getBoolean("CheckForUpdates", true)) {
+            getServer().getPluginManager().registerEvents(new UpdateChecker(this), this);
+        }
 
         getServer().getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&9&lSuper-Report &amade by &9&lSuperbility &ahas been loaded successfully!"));
     }

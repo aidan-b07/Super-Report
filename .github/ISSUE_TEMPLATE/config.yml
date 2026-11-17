@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and setup help
+    url: https://discord.gg/3wqbfmX74P
+    about: Ask in the support Discord. It's the quickest way to get help setting things up.
+  - name: Documentation
+    url: https://github.com/aidan-b07/Super-Report/tree/main/docs
+    about: Every command, permission and config option is explained here.

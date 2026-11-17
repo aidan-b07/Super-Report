@@ -29,6 +29,10 @@ public class MessagesConfig extends ConfigFile {
 
         config().set("Commands.PlayersOnly", "{prefix}&c- Only players can use this command!");
 
+        // To admins with superreport.updates when they join: Available once, then Download once for each place to get it
+        config().set("Updates.Available", "{prefix}&e- Super-Report &6{latest} &eis out! You're on &6{current}&e. Download it from:");
+        config().set("Updates.Download", "&7  » &e{platform}: &6{link}");
+
         config().set("ReportCommand.Usage", "{prefix}&e- Usage: &6/report <player> [reason]");
         config().set("ReportCommand.PlayerNotOnline", "{prefix}&c- &6{player} &cis not online!");
         config().set("ReportCommand.SelfReport", "{prefix}&c- You can't report yourself!");

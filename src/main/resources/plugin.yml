@@ -55,3 +55,6 @@ permissions:
   superreport.banbypass:
     description: Prevents users with this permission from being banned. Typically used by staff
     default: false
+  superreport.updates:
+    description: Tells the player when a new version of Super-Report is out. Typically used by admins
+    default: op

@@ -1,0 +1,47 @@
+name: Feature request
+description: Suggest something new for Super-Report, or a change to something that exists
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! Please check the [open issues](https://github.com/aidan-b07/Super-Report/issues) first in case someone has already suggested it. If they have, add a thumbs up to theirs instead.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would this help with?
+      description: The problem you're running into, or what you're trying to do on your server.
+      placeholder: My staff team can't tell who's already looking at a report, so two people end up handling the same one.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to happen?
+      description: How you'd picture it working. Commands, menus, config options, anything.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Anything you've tried instead?
+      description: Workarounds, or other plugins that do something similar.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part of the plugin is it about?
+      multiple: true
+      options:
+        - Reporting
+        - Reviewing reports
+        - Bans and mutes
+        - Menus
+        - Messages
+        - Discord bot
+        - Networks and MySQL
+        - Support for another plugin
+        - Something else
