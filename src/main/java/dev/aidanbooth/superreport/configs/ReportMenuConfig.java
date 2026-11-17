@@ -70,6 +70,11 @@ public class ReportMenuConfig extends ConfigFile {
         config().set("ReportMenu.Items.Fill.Material", "gray_stained_glass_pane");
         config().set("ReportMenu.Items.Fill.Name", " ");
 
-        save();
+    }
+
+    @Override
+    protected boolean isRequired(String key) {
+        // Not the reason slots, so admins can remove reasons
+        return key.equals("ReportMenu.Size") || key.startsWith("ReportMenu.Items.Fill.");
     }
 }

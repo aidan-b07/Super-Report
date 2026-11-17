@@ -59,6 +59,11 @@ public class MessagesConfig extends ConfigFile {
         permMuteMessageDefault.add("&6{reason} &cYou can appeal on our discord @&6https://discord.gg/3wqbfmX74P");
         config().set("PermanentMuteMessage", permMuteMessageDefault);
 
-        save();
+    }
+
+    @Override
+    protected boolean isRequired(String key) {
+        // Every message is used by name, so all of them are required
+        return true;
     }
 }
