@@ -45,7 +45,7 @@ permissions:
     description: Allows use of the '/punish' command. Typically used by admins
     default: op
   superreport.notifications:
-    description: Displays a notification of recent reports to plays on join. Typically used by mods / admins
+    description: Tells the player in chat whenever someone submits a report. Typically used by mods / admins
     default: op
   superreport.mutebypass:
     description: Prevents users with this permission from being muted. Typically used by staff

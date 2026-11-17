@@ -65,6 +65,7 @@ public class ReportService {
             playerData.incrementReported(draft.getReported());
             plugin.getDiscordBot().sendReportEmbed(report);
             if (reporter != null) reporter.sendMessage(successMessage);
+            notifyStaff(report);
         } catch (SQLException e) {
             plugin.getServer().getConsoleSender().sendMessage(ErrorCodes.getTemplate("001"));
             e.printStackTrace();
@@ -100,6 +101,18 @@ public class ReportService {
         return Colour(plugin.getMessageConfig().config().getString(path, fallback)
                 .replace("{player}", PlayerUtils.GetUsername(draft.getReported()))
                 .replace("{action}", draft.getPunishmentType() == PunishmentType.BAN ? "banned" : "muted"));
+    }
+
+    // Tells online staff with superreport.notifications, except the reporter who already got their own message
+    private void notifyStaff(Report report) {
+        String message = Colour(plugin.getMessageConfig().config().getString("ReportCommand.StaffNotification")
+                .replace("{reporter}", PlayerUtils.GetUsername(report.reporter()))
+                .replace("{reported}", PlayerUtils.GetUsername(report.player()))
+                .replace("{reason}", report.reason()));
+        for (Player staff : Bukkit.getOnlinePlayers()) {
+            if (staff.getUniqueId().equals(report.reporter())) continue;
+            if (staff.hasPermission("superreport.notifications")) staff.sendMessage(message);
+        }
     }
 
     public ReportCheck canReport(Player reporter, OfflinePlayer reported) {

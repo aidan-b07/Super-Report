@@ -25,6 +25,7 @@ public class MessagesConfig extends ConfigFile {
         config().set("ReportCommand.SelfReport", "&1&l[&9&lSuper-Report&1&l] &c- You can't report yourself!");
         config().set("ReportCommand.ReportExists", "&1&l[&9&lSuper-Report&1&l] &c- You can't report this player again!");
         config().set("ReportCommand.ReportError", "&1&l[&9&lSuper-Report&1&l] &c- There was an error while submitting your report!");
+        config().set("ReportCommand.StaffNotification", "&1&l[&9&lSuper-Report&1&l] &6{reporter} &7reported &c{reported} &7for &f{reason}&7. Use &e/reports &7to review it.");
         config().set("ReportCommand.ReportSuccessful", "&1&l[&9&lSuper-Report&1&l] &a- Your report has been submitted! Thank you for helping to make our community a better place :)");
         config().set("UnbanCommand.Successful", "&1&l[&9&lSuper-Report&1&l] &a- Player unbanned successfully!");
         config().set("UnbanCommand.PlayerNotBanned", "&1&l[&9&lSuper-Report&1&l] &a- Player {player} isn't banned!");
