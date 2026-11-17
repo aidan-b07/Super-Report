@@ -24,6 +24,8 @@ commands:
   superreport:
     description: Show the Super-Report commands you can use
     usage: /<command> [help|reload]
+    aliases:
+      - sr
     permission: superreport.help
   punish:
     description: Ban or mute a player through the punish menus

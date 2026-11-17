@@ -30,6 +30,40 @@
 - **Networks supported.** Share one MySQL database between servers. Bans apply everywhere and players on other servers can be reported.
 - **Everything is configurable.** Messages, menus, reasons and every part of the Discord embeds.
 
+## See it in action
+
+### Reporting a player
+
+`/report <player>` opens the reason menu. Hover over a reason to see what it covers, and click to send the report.
+
+<p align="center">
+  <img src="docs/assets/showcase/report-menu.gif" width="720" alt="The /report reason menu">
+</p>
+
+### Open reports
+
+`/reports` lists every open report. Hover over one to see the reason, who sent it and when.
+
+<p align="center">
+  <img src="docs/assets/showcase/reports-list.gif" width="720" alt="The /reports list of open reports">
+</p>
+
+### Handling a report
+
+Open a report to see the player's history, then dismiss it or punish them. Here the player is muted: pick a reason, pick a length, and the report is resolved.
+
+<p align="center">
+  <img src="docs/assets/showcase/handling-a-report.gif" width="720" alt="Reviewing a report and muting the player">
+</p>
+
+### Banning
+
+Bans work the same way. Pick a reason and a length, and the player is kicked straight away with the ban screen.
+
+<p align="center">
+  <img src="docs/assets/showcase/ban-sequence.gif" width="720" alt="Banning a player from a report">
+</p>
+
 ## Installation
 
 1. Download `SuperReport.jar` and put it in your server's `plugins` folder.
@@ -51,8 +85,8 @@ It works out of the box with a local SQLite database. To share data between serv
 | `/mute <player>`, `/tempmute <player>` | Mute through the menus, starting at the reason | `superreport.punish` |
 | `/unban <player>` | Lift a ban | `superreport.unban` |
 | `/unmute <player>` | Lift a mute | `superreport.unmute` |
-| `/superreport` | List the Super-Report commands you can use | `superreport.help` |
-| `/superreport reload` | Read every config file again and reconnect the Discord bot | `superreport.reload` |
+| `/superreport`, `/sr` | List the Super-Report commands you can use | `superreport.help` |
+| `/superreport reload`, `/sr reload` | Read every config file again and reconnect the Discord bot | `superreport.reload` |
 
 ## Permissions
 

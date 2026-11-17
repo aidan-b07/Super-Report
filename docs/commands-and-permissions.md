@@ -12,8 +12,8 @@
 | `/mute <player>`, `/tempmute <player>` | Same as `/punish`, starting at the mute reasons | `superreport.punish` |
 | `/unban <player>` | Lifts a ban | `superreport.unban` |
 | `/unmute <player>` | Lifts a mute | `superreport.unmute` |
-| `/superreport` | Lists the Super-Report commands you can use | `superreport.help` |
-| `/superreport reload` | Reads every config file again | `superreport.reload` |
+| `/superreport`, `/sr` | Lists the Super-Report commands you can use | `superreport.help` |
+| `/superreport reload`, `/sr reload` | Reads every config file again | `superreport.reload` |
 
 ### Reporting
 - You can only report players who are online, either on this server or on another one sharing the database (see [Networks](networks.md)).
