@@ -69,6 +69,7 @@ It works out of the box with a local SQLite database. To share data between serv
 | `superreport.unban` | Op | Use `/unban` |
 | `superreport.unmute` | Op | Use `/unmute` |
 | `superreport.notifications` | Op | Get told about new reports, and how many are open on join |
+| `superreport.updates` | Op | Get told when a new version of Super-Report is out |
 | `superreport.banbypass` | Nobody | Can't be banned |
 | `superreport.mutebypass` | Nobody | Can't be muted |
 

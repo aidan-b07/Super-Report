@@ -23,6 +23,8 @@ Each message can use the placeholders listed next to it. In the messages below:
 | Key | Placeholders | When it's sent |
 |---|---|---|
 | `Commands.PlayersOnly` | | The console runs a command that needs a player |
+| `Updates.Available` | `{latest}`, `{current}` | To staff with `superreport.updates` when they join, if a newer version is out |
+| `Updates.Download` | `{platform}`, `{link}` | Sent after `Updates.Available`, once for each place the new version can be downloaded |
 
 ## Reporting
 

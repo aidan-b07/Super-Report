@@ -45,6 +45,7 @@ Every punishment goes through the same menus: ban or mute, a reason from [the re
 | `superreport.unban` | Op | Use `/unban` |
 | `superreport.unmute` | Op | Use `/unmute` |
 | `superreport.notifications` | Op | Be told about each new report, and how many are open when joining |
+| `superreport.updates` | Op | Be told when a new version of Super-Report is out |
 | `superreport.banbypass` | Nobody | Can't be banned |
 | `superreport.mutebypass` | Nobody | Can't be muted |
 

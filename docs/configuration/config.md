@@ -47,6 +47,14 @@ The server name is:
 
 On a network, give every server a different name.
 
+## Update checks
+
+| Setting | Default | What it does |
+|---|---|---|
+| `CheckForUpdates` | `true` | Checks GitHub for a new release on startup and twice a day |
+
+When a newer release is out, the console says so, and staff with `superreport.updates` are told when they join. Both list every place it can be downloaded. The check only asks GitHub for the latest release and sends no server details, though, like any web request, GitHub can see your server's IP address. Set it to `false` to turn it off.
+
 ## Discord bot
 
 | Setting | Default | What it does |
