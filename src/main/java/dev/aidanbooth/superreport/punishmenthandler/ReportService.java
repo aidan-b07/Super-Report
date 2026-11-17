@@ -41,7 +41,7 @@ public class ReportService {
         this.playerData = playerData;
 
         this.reportPipeline = new Pipeline<>(this::submit, new SelectReportReasonStep());
-        this.punishmentPipeline = new PunishmentPipeline(this::resolve, this::getReports);
+        this.punishmentPipeline = new PunishmentPipeline(this::resolve);
 
         this.successMessage = plugin.getMessageConfig().get("ReportCommand.ReportSuccessful");
         this.errorMessage = plugin.getMessageConfig().get("ReportCommand.ReportError");

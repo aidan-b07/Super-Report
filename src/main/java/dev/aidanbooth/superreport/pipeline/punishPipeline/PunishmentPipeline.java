@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class PunishmentPipeline extends Pipeline<PunishmentDraft> {
-    public PunishmentPipeline(Consumer<PunishmentDraft> onComplete, Supplier<List<Report>> reportSource) {
+    public PunishmentPipeline(Consumer<PunishmentDraft> onComplete) {
         super(onComplete,
                 new GetReportStep(),
                 new ControlPanelStep(),
