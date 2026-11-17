@@ -5,6 +5,7 @@ import dev.aidanbooth.superreport.database.PlayerDataRepository;
 import dev.aidanbooth.superreport.database.ReportRepository;
 import dev.aidanbooth.superreport.database.model.PlayerData;
 import dev.aidanbooth.superreport.database.model.PunishmentType;
+import dev.aidanbooth.superreport.utils.GetDuration;
 import dev.aidanbooth.superreport.utils.PlayerUtils;
 import dev.aidanbooth.superreport.database.model.Report;
 import dev.aidanbooth.superreport.pipeline.Pipeline;
@@ -21,7 +22,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static dev.aidanbooth.superreport.utils.ConfigUtils.Colour;
 
 public class ReportService {
     private final Main plugin;
@@ -43,8 +43,8 @@ public class ReportService {
         this.reportPipeline = new Pipeline<>(this::submit, new SelectReportReasonStep());
         this.punishmentPipeline = new PunishmentPipeline(this::resolve, this::getReports);
 
-        this.successMessage = Colour(plugin.getMessageConfig().config().getString("ReportCommand.ReportSuccessful"));
-        this.errorMessage = Colour(plugin.getMessageConfig().config().getString("ReportCommand.ReportError"));
+        this.successMessage = plugin.getMessageConfig().get("ReportCommand.ReportSuccessful");
+        this.errorMessage = plugin.getMessageConfig().get("ReportCommand.ReportError");
     }
 
     public void openReportMenu(Player reporter, OfflinePlayer reported) {
@@ -73,42 +73,53 @@ public class ReportService {
         }
     }
     public void resolve(PunishmentDraft draft) {
-        if (draft.getAction() == PunishmentDraft.Action.PUNISH) {
+        Player resolver = Bukkit.getPlayer(draft.getResolver());
+        boolean punish = draft.getAction() == PunishmentDraft.Action.PUNISH;
+        if (punish) {
             PunishmentService.PunishResult result = plugin.getPunishmentService().punishPlayer(draft.build());
             if (result != PunishmentService.PunishResult.APPLIED) {
                 // Nothing was applied, so leave the report open for someone to deal with
-                Player resolver = Bukkit.getPlayer(draft.getResolver());
                 if (resolver != null) resolver.sendMessage(punishFailedMessage(result, draft));
                 return;
             }
         }
 
+        String reported = PlayerUtils.GetUsername(draft.getReported());
         try {
             // TODO Update to enums?
             reports.archive(draft.getReportId(), draft.getResolver(), draft.getAction().toString());
         } catch (SQLException e) {
-            // TODO Handle error
             e.printStackTrace();
+            if (resolver != null) resolver.sendMessage(plugin.getMessageConfig().get("Report.ArchiveError").replace("{player}", reported));
+            // The punishment itself was still applied, so carry on and confirm it
+        }
+        if (resolver == null) return;
+
+        if (punish) {
+            int duration = draft.getDuration();
+            resolver.sendMessage(plugin.getMessageConfig().get("Punishment.Applied")
+                    .replace("{player}", reported)
+                    .replace("{action}", draft.getPunishmentType() == PunishmentType.BAN ? "banned" : "muted")
+                    .replace("{duration}", duration == GetDuration.PERMANENT ? "permanently" : "for " + GetDuration.format(duration))
+                    .replace("{reason}", draft.getReason()));
+        } else {
+            resolver.sendMessage(plugin.getMessageConfig().get("Report.Dismissed").replace("{player}", reported));
         }
     }
 
     private String punishFailedMessage(PunishmentService.PunishResult result, PunishmentDraft draft) {
         String path = result == PunishmentService.PunishResult.BYPASSED ? "Punishment.Bypassed" : "Punishment.Error";
-        String fallback = result == PunishmentService.PunishResult.BYPASSED
-                ? "&1&l[&9&lSuper-Report&1&l] &c- &6{player} &ccan't be {action}, they have the bypass permission. The report is still open."
-                : "&1&l[&9&lSuper-Report&1&l] &c- The punishment couldn't be saved. The report is still open.";
-        // Fallback keeps older Messages.yml files (written before these keys existed) working
-        return Colour(plugin.getMessageConfig().config().getString(path, fallback)
+        return plugin.getMessageConfig().get(path)
                 .replace("{player}", PlayerUtils.GetUsername(draft.getReported()))
-                .replace("{action}", draft.getPunishmentType() == PunishmentType.BAN ? "banned" : "muted"));
+                .replace("{action}", draft.getPunishmentType() == PunishmentType.BAN ? "banned" : "muted");
     }
 
     // Tells online staff with superreport.notifications, except the reporter who already got their own message
     private void notifyStaff(Report report) {
-        String message = Colour(plugin.getMessageConfig().config().getString("ReportCommand.StaffNotification")
+        String message = plugin.getMessageConfig().get("ReportCommand.StaffNotification")
                 .replace("{reporter}", PlayerUtils.GetUsername(report.reporter()))
                 .replace("{reported}", PlayerUtils.GetUsername(report.player()))
-                .replace("{reason}", report.reason()));
+                .replace("{reason}", report.reason());
         for (Player staff : Bukkit.getOnlinePlayers()) {
             if (staff.getUniqueId().equals(report.reporter())) continue;
             if (staff.hasPermission("superreport.notifications")) staff.sendMessage(message);

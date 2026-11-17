@@ -6,7 +6,6 @@ import dev.aidanbooth.superreport.database.model.PunishmentType;
 import dev.aidanbooth.superreport.database.model.Report;
 import dev.aidanbooth.superreport.pipeline.data.PunishmentDraft;
 import dev.aidanbooth.superreport.pipeline.data.ReportDraft;
-import dev.aidanbooth.superreport.utils.ConfigUtils;
 import dev.aidanbooth.superreport.utils.ErrorCodes;
 import dev.aidanbooth.superreport.utils.GetDuration;
 import dev.aidanbooth.superreport.utils.PlayerUtils;
@@ -22,7 +21,6 @@ import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 
-import static dev.aidanbooth.superreport.utils.ConfigUtils.Colour;
 
 public class PunishmentService {
     private Main plugin = Main.getPlugin(Main.class);
@@ -35,10 +33,10 @@ public class PunishmentService {
        loadMessages();
     }
     private void loadMessages() {
-        this.permanentBanMessage = Colour(ConfigUtils.BuildConfigMessage(plugin.getMessageConfig(), "PermanentBanMessage"));
-        this.temporaryBanMessage = Colour(ConfigUtils.BuildConfigMessage(plugin.getMessageConfig(), "TemporaryBanMessage"));
-        this.permanentMuteMessage = Colour(ConfigUtils.BuildConfigMessage(plugin.getMessageConfig(), "PermanentMuteMessage"));
-        this.temporaryMuteMessage = Colour(ConfigUtils.BuildConfigMessage(plugin.getMessageConfig(), "TemporaryMuteMessage"));
+        this.permanentBanMessage = plugin.getMessageConfig().lines("PermanentBanMessage");
+        this.temporaryBanMessage = plugin.getMessageConfig().lines("TemporaryBanMessage");
+        this.permanentMuteMessage = plugin.getMessageConfig().lines("PermanentMuteMessage");
+        this.temporaryMuteMessage = plugin.getMessageConfig().lines("TemporaryMuteMessage");
     }
 
     public enum PunishResult { APPLIED, BYPASSED, ERROR }

@@ -33,19 +33,12 @@ public class ReportCommand implements CommandExecutor {
     private final String reportExistsMessage;
 
     public ReportCommand() {
-        usageMessage = ChatColor.translateAlternateColorCodes('&',
-                plugin.getMessageConfig().config().getString("ReportCommand.Usage"));
-        playerNotOnlineMessage = ChatColor.translateAlternateColorCodes('&',
-                plugin.getMessageConfig().config().getString("ReportCommand.PlayerNotOnline"));
-        selfReportMessage = ChatColor.translateAlternateColorCodes('&',
-                plugin.getMessageConfig().config().getString("ReportCommand.SelfReport"));
-        reportSuccessfulMessage = ChatColor.translateAlternateColorCodes('&',
-                plugin.getMessageConfig().config().getString("ReportCommand.ReportSuccessful"));
-        reportErrorMessage = ChatColor.translateAlternateColorCodes('&',
-                plugin.getMessageConfig().config().getString("ReportCommand.ReportError"));
-        reportExistsMessage = ChatColor.translateAlternateColorCodes('&',
-                plugin.getMessageConfig().config().getString("ReportCommand.ReportExists"));
-
+        usageMessage = plugin.getMessageConfig().get("ReportCommand.Usage");
+        playerNotOnlineMessage = plugin.getMessageConfig().get("ReportCommand.PlayerNotOnline");
+        selfReportMessage = plugin.getMessageConfig().get("ReportCommand.SelfReport");
+        reportSuccessfulMessage = plugin.getMessageConfig().get("ReportCommand.ReportSuccessful");
+        reportErrorMessage = plugin.getMessageConfig().get("ReportCommand.ReportError");
+        reportExistsMessage = plugin.getMessageConfig().get("ReportCommand.ReportExists");
     }
 
 

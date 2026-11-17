@@ -7,7 +7,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-import static dev.aidanbooth.superreport.utils.ConfigUtils.Colour;
 
 public class UnbanCommand implements CommandExecutor {
     private final Main plugin = Main.getPlugin(Main.class);
@@ -16,10 +15,9 @@ public class UnbanCommand implements CommandExecutor {
     private final String failMessage;
 
     public UnbanCommand() {
-        // Defaults keep older Messages.yml files working when a key is missing
-        successMessage = message("UnbanCommand.Successful", "&1&l[&9&lSuper-Report&1&l] &a- Player unbanned successfully!");
-        notBannedMessage = message("UnbanCommand.PlayerNotBanned", "&1&l[&9&lSuper-Report&1&l] &c- Player {player} isn't banned!");
-        failMessage = message("UnbanCommand.Fail", "&1&l[&9&lSuper-Report&1&l] &c- Couldn't unban player!");
+        successMessage = plugin.getMessageConfig().get("UnbanCommand.Successful");
+        notBannedMessage = plugin.getMessageConfig().get("UnbanCommand.PlayerNotBanned");
+        failMessage = plugin.getMessageConfig().get("UnbanCommand.Fail");
     }
 
     @Override
@@ -28,14 +26,11 @@ public class UnbanCommand implements CommandExecutor {
         if (args.length == 0) return false; // shows the usage
 
         switch (plugin.getPunishmentService().lift(PunishmentType.BAN, Bukkit.getOfflinePlayer(args[0]).getUniqueId())) {
-            case LIFTED:       sender.sendMessage(successMessage); break;
+            case LIFTED:       sender.sendMessage(successMessage.replace("{player}", args[0])); break;
             case NOT_PUNISHED: sender.sendMessage(notBannedMessage.replace("{player}", args[0])); break;
-            case ERROR:        sender.sendMessage(failMessage); break;
+            case ERROR:        sender.sendMessage(failMessage.replace("{player}", args[0])); break;
         }
         return true;
     }
 
-    private String message(String path, String fallback) {
-        return Colour(plugin.getMessageConfig().config().getString(path, fallback));
-    }
 }

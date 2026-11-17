@@ -7,7 +7,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-import static dev.aidanbooth.superreport.utils.ConfigUtils.Colour;
 
 public class UnmuteCommand implements CommandExecutor {
     private final Main plugin = Main.getPlugin(Main.class);
@@ -16,10 +15,9 @@ public class UnmuteCommand implements CommandExecutor {
     private final String failMessage;
 
     public UnmuteCommand() {
-        // Defaults keep older Messages.yml files working when a key is missing
-        successMessage = message("UnmuteCommand.Successful", "&1&l[&9&lSuper-Report&1&l] &a- Player unmuted successfully!");
-        notMutedMessage = message("UnmuteCommand.PlayerNotMuted", "&1&l[&9&lSuper-Report&1&l] &c- Player {player} isn't muted!");
-        failMessage = message("UnmuteCommand.Fail", "&1&l[&9&lSuper-Report&1&l] &c- Couldn't unmute player!");
+        successMessage = plugin.getMessageConfig().get("UnmuteCommand.Successful");
+        notMutedMessage = plugin.getMessageConfig().get("UnmuteCommand.PlayerNotMuted");
+        failMessage = plugin.getMessageConfig().get("UnmuteCommand.Fail");
     }
 
     @Override
@@ -28,14 +26,11 @@ public class UnmuteCommand implements CommandExecutor {
         if (args.length == 0) return false; // shows the usage
 
         switch (plugin.getPunishmentService().lift(PunishmentType.MUTE, Bukkit.getOfflinePlayer(args[0]).getUniqueId())) {
-            case LIFTED:       sender.sendMessage(successMessage); break;
+            case LIFTED:       sender.sendMessage(successMessage.replace("{player}", args[0])); break;
             case NOT_PUNISHED: sender.sendMessage(notMutedMessage.replace("{player}", args[0])); break;
-            case ERROR:        sender.sendMessage(failMessage); break;
+            case ERROR:        sender.sendMessage(failMessage.replace("{player}", args[0])); break;
         }
         return true;
     }
 
-    private String message(String path, String fallback) {
-        return Colour(plugin.getMessageConfig().config().getString(path, fallback));
-    }
 }
