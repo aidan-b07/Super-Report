@@ -20,8 +20,8 @@ commands:
     usage: /<command>
     permission: superreport.unmute
   punish:
-    description: Punish a player
-    usage: /<command>
+    description: Ban or mute a player through the punish menus
+    usage: /<command> <player>
     aliases:
       - ban
       - mute

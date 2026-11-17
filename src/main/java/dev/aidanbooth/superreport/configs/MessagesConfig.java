@@ -51,6 +51,15 @@ public class MessagesConfig extends ConfigFile {
         config().set("Punishment.Bypassed", "{prefix}&c- &6{player} &ccan't be {action}, they have the bypass permission! The report is still open.");
         config().set("Punishment.Error", "{prefix}&c- The punishment couldn't be saved, so the report is still open! Check the console for errors.");
 
+        // /punish, /ban and /mute. {action} is banned or muted, {duration} is "for 3 days" or "permanently"
+        config().set("PunishCommand.Usage", "{prefix}&e- Usage: &6/punish <player>&e, &6/ban <player> &eor &6/mute <player>");
+        config().set("PunishCommand.PlayersOnly", "{prefix}&c- Only players can open the punish menu!");
+        config().set("PunishCommand.Self", "{prefix}&c- You can't punish yourself!");
+        config().set("PunishCommand.Applied", "{prefix}&a- &6{player} &ahas been {action} {duration} for &6{reason}&a!");
+        config().set("PunishCommand.AlreadyPunished", "{prefix}&c- &6{player} &cis already {action}!");
+        config().set("PunishCommand.Bypassed", "{prefix}&c- &6{player} &ccan't be {action}, they have the bypass permission!");
+        config().set("PunishCommand.Error", "{prefix}&c- The punishment couldn't be saved! Check the console for errors.");
+
         // Kick screens: {banner}, {reason}, {time}
         config().set("TemporaryBanMessage", Arrays.asList(
                 "&1&l[&9&lSuper-Report&1&l] &c- You have been banned by &6{banner}&c for",

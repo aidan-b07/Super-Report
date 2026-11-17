@@ -29,7 +29,7 @@ public class ControlPanelInventory {
     private final Main plugin = Main.getPlugin(Main.class);
 
     public Inventory create(InventoryHolder holder, PunishmentDraft data) {
-        String reported = PlayerUtils.GetUsername(data.getReported());
+        String reported = data.getReportedName();
         Inventory inventory = Bukkit.createInventory(holder, 45, MenuItems.title("&8Review » " + reported, t -> t));
 
         inventory.setItem(11, profile(data.getReported(), "&c&lReported: &f", "&7The player who was reported."));

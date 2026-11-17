@@ -1,6 +1,5 @@
 package dev.aidanbooth.superreport.commands.report;
 
-import dev.aidanbooth.superreport.GetValues;
 import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.pipeline.data.ReportDraft;
 import org.bukkit.Bukkit;
@@ -14,7 +13,6 @@ import org.bukkit.entity.Player;
 public class ReportCommand implements CommandExecutor {
     private Main plugin = Main.getPlugin(Main.class);
 
-    private GetValues values = new GetValues();
 
     private final String usageMessage;
     private final String playerNotOnlineMessage;

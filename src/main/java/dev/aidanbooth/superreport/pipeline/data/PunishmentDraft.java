@@ -3,6 +3,7 @@ package dev.aidanbooth.superreport.pipeline.data;
 import dev.aidanbooth.superreport.database.model.Punishment;
 import dev.aidanbooth.superreport.database.model.PunishmentType;
 import dev.aidanbooth.superreport.database.model.Report;
+import dev.aidanbooth.superreport.utils.PlayerUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -11,6 +12,8 @@ public class PunishmentDraft {
     public enum Action { DISMISS, PUNISH }
 
     private UUID reported;
+    private String reportedName;
+    private boolean typeFixed;
     private UUID reporter;
     private UUID reportId;
     private UUID resolver;
@@ -28,6 +31,14 @@ public class PunishmentDraft {
 
     public UUID getReported() { return this.reported; }
     public void setReported(UUID reported) { this.reported = reported; }
+
+    // The punished player's name. /punish knows it from what was typed, even for players this server hasn't seen
+    public String getReportedName() { return this.reportedName != null ? this.reportedName : PlayerUtils.GetUsername(this.reported); }
+    public void setReportedName(String name) { this.reportedName = name; }
+
+    // Set by /ban and /mute, which skip the ban or mute menu
+    public boolean isTypeFixed() { return this.typeFixed; }
+    public void setTypeFixed(boolean typeFixed) { this.typeFixed = typeFixed; }
 
     public UUID getReporter() { return this.reporter; }
     public void setReporter(UUID reporter) { this.reporter = reporter; }

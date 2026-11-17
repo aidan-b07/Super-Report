@@ -24,7 +24,7 @@ public class ReasonInventory {
                 ban ? "&8Ban » Pick a reason" : "&8Mute » Pick a reason",
                 ban ? "Ban-Reasons.yml" : "Mute-Reasons.yml");
         // The bottom corners are always Back and Next, whatever the config puts there
-        NavBar.add(inventory, "ban or mute", "Continue", data.getReason() != null,
+        NavBar.add(inventory, data.isTypeFixed() ? null : "ban or mute", "Continue", data.getReason() != null,
                 "&7Keep &f" + data.getReason() + " &7and choose how long it lasts.");
         return inventory;
     }

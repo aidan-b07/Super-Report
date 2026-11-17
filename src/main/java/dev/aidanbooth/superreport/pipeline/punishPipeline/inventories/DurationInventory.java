@@ -26,7 +26,7 @@ public class DurationInventory {
     public Inventory create(InventoryHolder holder, PunishmentDraft data) {
         int duration = data.getDuration();
         boolean ban = data.getPunishmentType() == PunishmentType.BAN;
-        String reported = PlayerUtils.GetUsername(data.getReported());
+        String reported = data.getReportedName();
         String length = duration == 0 ? "Pick a length" : GetDuration.format(duration, 2);
         Inventory inventory = Bukkit.createInventory(holder, 54, MenuItems.title("&8" + (ban ? "Ban" : "Mute") + " » " + length, t -> t));
 

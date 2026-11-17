@@ -20,7 +20,7 @@ public class PunishmentTypeInventory {
     public static final int MUTE = 15;
 
     public Inventory create(InventoryHolder holder, PunishmentDraft data) {
-        String reported = PlayerUtils.GetUsername(data.getReported());
+        String reported = data.getReportedName();
         Inventory inventory = Bukkit.createInventory(holder, 36, MenuItems.title("&8Punish » " + reported, t -> t));
 
         List<String> headLore = new ArrayList<>();
@@ -45,7 +45,7 @@ public class PunishmentTypeInventory {
                 "",
                 "&e» Click to mute")));
 
-        NavBar.add(inventory, "the report", "Continue", chosen != null, "&7Pick a reason for the " + (chosen == PunishmentType.MUTE ? "mute" : "ban") + ".");
+        NavBar.add(inventory, data.getReport() != null ? "the report" : null, "Continue", chosen != null, "&7Pick a reason for the " + (chosen == PunishmentType.MUTE ? "mute" : "ban") + ".");
         MenuItems.fill(inventory, XMaterial.BLACK_STAINED_GLASS_PANE);
         return inventory;
     }

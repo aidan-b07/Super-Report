@@ -20,7 +20,7 @@ public class DismissReportStep implements PipelineStep<PunishmentDraft> {
 
     @Override
     public Inventory open(InventoryHolder holder, Player player, PunishmentDraft data) {
-        String reported = PlayerUtils.GetUsername(data.getReported());
+        String reported = data.getReportedName();
         List<String> lore = new ArrayList<>();
         if (data.getReport() != null) lore.add("&7Reported for: &f" + data.getReport().reason());
         lore.add("&7Reported by: &f" + PlayerUtils.GetUsername(data.getReporter()));

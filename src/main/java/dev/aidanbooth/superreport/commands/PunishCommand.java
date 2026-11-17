@@ -1,46 +1,46 @@
 package dev.aidanbooth.superreport.commands;
 
-import dev.aidanbooth.superreport.pipeline.punishPipeline.inventories.PunishmentTypeInventory;
-import dev.aidanbooth.superreport.GetValues;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
+import dev.aidanbooth.superreport.Main;
+import dev.aidanbooth.superreport.database.model.PunishmentType;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 
 import java.util.UUID;
 
+// /punish <player> opens Ban or Mute, Reason, Duration. /ban and /mute (and the temp aliases) skip straight to the reason
 public class PunishCommand implements CommandExecutor {
-    private GetValues values = new GetValues();
+    private final Main plugin = Main.getPlugin(Main.class);
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!cmd.getName().equalsIgnoreCase("punish")) return false;
-        sender.sendMessage(ChatColor.RED + "Not available yet");
-        return true;
-        /*
-
         if (!(sender instanceof Player)) {
-            sender.sendMessage("You must be a player to use this command!");
+            sender.sendMessage(plugin.getMessageConfig().get("PunishCommand.PlayersOnly"));
+            return true;
+        }
+        if (args.length == 0) {
+            sender.sendMessage(plugin.getMessageConfig().get("PunishCommand.Usage"));
             return true;
         }
 
-        Player player = (Player) sender;
-        if (args.length > 0) {
-            OfflinePlayer punished = Bukkit.getOfflinePlayer(args[0]);
-            UUID punishedUuid = punished.getUniqueId();
-
-            values.addPunishingPlayer(player, punishedUuid);
-
-            Inventory inv = Bukkit.createInventory(null, 27, ChatColor.GOLD + "Punish Player");
-            // PunishmentTypeInventory.addPunishmentInvItems(inv);
-            player.openInventory(inv);
+        Player staff = (Player) sender;
+        UUID target = plugin.getPunishmentService().findPlayerId(args[0]);
+        if (target.equals(staff.getUniqueId())) {
+            staff.sendMessage(plugin.getMessageConfig().get("PunishCommand.Self"));
             return true;
         }
-        return false;
-         */
+        plugin.getPunishmentService().openPunishMenu(staff, target, args[0], typeFor(label));
+        return true;
+    }
+
+    // The label is whichever alias was typed
+    private static PunishmentType typeFor(String label) {
+        String command = label.toLowerCase();
+        // Labels can come with the plugin's name in front, e.g. superreport:ban
+        if (command.contains(":")) command = command.substring(command.indexOf(':') + 1);
+        if (command.equals("ban") || command.equals("tempban")) return PunishmentType.BAN;
+        if (command.equals("mute") || command.equals("tempmute")) return PunishmentType.MUTE;
+        return null;
     }
 }

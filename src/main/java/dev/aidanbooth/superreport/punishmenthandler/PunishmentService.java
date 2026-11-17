@@ -5,7 +5,11 @@ import dev.aidanbooth.superreport.database.model.PlayerData;
 import dev.aidanbooth.superreport.database.model.Punishment;
 import dev.aidanbooth.superreport.database.model.PunishmentType;
 import dev.aidanbooth.superreport.database.model.Report;
+import dev.aidanbooth.superreport.pipeline.Pipeline;
 import dev.aidanbooth.superreport.pipeline.data.PunishmentDraft;
+import dev.aidanbooth.superreport.pipeline.punishPipeline.steps.DurationStep;
+import dev.aidanbooth.superreport.pipeline.punishPipeline.steps.PunishTypeStep;
+import dev.aidanbooth.superreport.pipeline.punishPipeline.steps.ReasonStep;
 import dev.aidanbooth.superreport.pipeline.data.ReportDraft;
 import dev.aidanbooth.superreport.utils.ErrorCodes;
 import dev.aidanbooth.superreport.utils.GetDuration;
@@ -29,8 +33,71 @@ public class PunishmentService {
     private String permanentMuteMessage;
     private String temporaryMuteMessage;
 
+    // /punish picks ban or mute first. /ban and /mute already know, so they start at the reason
+    private final Pipeline<PunishmentDraft> punishPipeline = new Pipeline<>(this::punishFromMenu,
+            new PunishTypeStep(), new ReasonStep(), new DurationStep());
+    private final Pipeline<PunishmentDraft> typedPunishPipeline = new Pipeline<>(this::punishFromMenu,
+            new ReasonStep(), new DurationStep());
+
     public PunishmentService() {
        loadMessages();
+    }
+
+    // Opens the punish menus for a player. type is null for /punish, or set by /ban and /mute
+    public void openPunishMenu(Player staff, UUID target, String targetName, PunishmentType type) {
+        if (type != null) {
+            Player online = Bukkit.getPlayer(target);
+            // Checked now too, so staff aren't sent through the menus for nothing
+            if (online != null && online.hasPermission(type.bypassPermission())) {
+                staff.sendMessage(message("PunishCommand.Bypassed", targetName, type, null));
+                return;
+            }
+        }
+        PunishmentDraft draft = new PunishmentDraft(staff.getUniqueId());
+        draft.setAction(PunishmentDraft.Action.PUNISH);
+        draft.setReported(target);
+        draft.setReportedName(targetName);
+        draft.setPunishmentType(type);
+        draft.setTypeFixed(type != null);
+        plugin.getPipelineManager().start(staff, type == null ? punishPipeline : typedPunishPipeline, draft);
+    }
+
+    // The end of the /punish menus. Unlike a report there's nothing to close, so it only applies the punishment
+    private void punishFromMenu(PunishmentDraft draft) {
+        Player staff = Bukkit.getPlayer(draft.getResolver());
+        String name = draft.getReportedName();
+        PunishmentType type = draft.getPunishmentType();
+        try {
+            if (findActive(type, draft.getReported()).isPresent()) {
+                if (staff != null) staff.sendMessage(message("PunishCommand.AlreadyPunished", name, type, null));
+                return;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        PunishResult result = punishPlayer(draft.build(plugin.getServerName()));
+        if (staff == null) return;
+        switch (result) {
+            case APPLIED:
+                int duration = draft.getDuration();
+                staff.sendMessage(message("PunishCommand.Applied", name, type, draft.getReason())
+                        .replace("{duration}", duration == GetDuration.PERMANENT ? "permanently" : "for " + GetDuration.format(duration)));
+                break;
+            case BYPASSED:
+                staff.sendMessage(message("PunishCommand.Bypassed", name, type, null));
+                break;
+            default:
+                staff.sendMessage(message("PunishCommand.Error", name, type, null));
+                break;
+        }
+    }
+
+    private String message(String path, String player, PunishmentType type, String reason) {
+        return plugin.getMessageConfig().get(path)
+                .replace("{player}", player)
+                .replace("{action}", type == PunishmentType.BAN ? "banned" : "muted")
+                .replace("{reason}", reason == null ? "" : reason);
     }
     private void loadMessages() {
         this.permanentBanMessage = plugin.getMessageConfig().lines("PermanentBanMessage");

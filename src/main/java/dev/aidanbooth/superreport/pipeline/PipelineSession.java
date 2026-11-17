@@ -107,7 +107,12 @@ public class PipelineSession<T> implements InventoryHolder {
                     moveTo(pipeline.find(result.target()));
                     break;
                 case BACK:
-                    if (!history.isEmpty()) current = history.pop();
+                    // Back on the first menu closes it, like its Close button
+                    if (history.isEmpty()) {
+                        end();
+                        break;
+                    }
+                    current = history.pop();
                     open();
                     break;
                 case COMPLETE:
