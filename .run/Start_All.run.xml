@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Start all test servers" type="CompoundRunConfigurationType">
+    <toRun name="1.8.8 :25508" type="JarApplication" />
+    <toRun name="1.21.11 :25521" type="JarApplication" />
+    <toRun name="26.3 :25526" type="JarApplication" />
+    <method v="2" />
+  </configuration>
+</component>

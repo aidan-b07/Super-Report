@@ -8,12 +8,19 @@
       plugin.name     file name to install it as
       eula.file       shared eula.txt copied into each server folder
       work.dir        scratch folder for API responses (target/)
+
+    With server.version=all the plugin is installed into every existing run/<version>/ folder
+    that has a server.jar, and nothing is downloaded.
 -->
 <project name="test-server" default="deploy">
 
-    <target name="deploy" depends="install-plugin, download-server"/>
+    <condition property="deploy.all">
+        <equals arg1="${server.version}" arg2="all"/>
+    </condition>
 
-    <target name="install-plugin">
+    <target name="deploy" depends="deploy-all, install-plugin, download-server"/>
+
+    <target name="install-plugin" unless="deploy.all">
         <mkdir dir="${server.dir}/plugins"/>
         <copy file="${plugin.jar}" tofile="${server.dir}/plugins/${plugin.name}" overwrite="true"/>
         <!-- Reuse the EULA answer from run/eula.txt for every version folder -->
@@ -21,7 +28,36 @@
     </target>
 
     <target name="check-server">
-        <available file="${server.dir}/server.jar" property="server.jar.present"/>
+        <!-- In "all" mode there is no single server to download -->
+        <condition property="server.jar.present">
+            <or>
+                <available file="${server.dir}/server.jar"/>
+                <isset property="deploy.all"/>
+            </or>
+        </condition>
+    </target>
+
+    <!-- Runs install-here once inside every run/<version>/ folder -->
+    <target name="deploy-all" if="deploy.all">
+        <dirname file="${eula.file}" property="run.dir"/>
+        <subant genericantfile="${ant.file}" target="install-here" inheritall="false" failonerror="true">
+            <property name="plugin.jar" value="${plugin.jar}"/>
+            <property name="plugin.name" value="${plugin.name}"/>
+            <property name="eula.file" value="${eula.file}"/>
+            <dirset dir="${run.dir}" includes="*"/>
+        </subant>
+    </target>
+
+    <target name="check-here">
+        <available file="${basedir}/server.jar" property="here.is.server"/>
+    </target>
+
+    <!-- basedir is one run/<version>/ folder. Folders without a server.jar are skipped -->
+    <target name="install-here" depends="check-here" if="here.is.server">
+        <mkdir dir="${basedir}/plugins"/>
+        <copy file="${plugin.jar}" tofile="${basedir}/plugins/${plugin.name}" overwrite="true"/>
+        <copy file="${eula.file}" todir="${basedir}" failonerror="false" quiet="true"/>
+        <echo message="Installed ${plugin.name} into ${basedir}"/>
     </target>
 
     <target name="download-server" depends="check-server" unless="server.jar.present">
