@@ -33,6 +33,7 @@ public class MessagesConfig extends ConfigFile {
         config().set("ReportCommand.ReportExists", "{prefix}&c- You have already reported this player!");
         config().set("ReportCommand.ReportError", "{prefix}&c- There was an error submitting your report. Please try again!");
         config().set("ReportCommand.ReportSuccessful", "{prefix}&a- Your report has been submitted! Thank you for helping to make our community a better place :)");
+        config().set("ReportCommand.JoinNotification", "{prefix}&e- Open reports waiting: &6{count}&e. Use &6/reports &eto review them.");
         config().set("ReportCommand.StaffNotification", "{prefix}&e- &6{reporter} &ereported &6{reported} &efor &6{reason}&e! Use &6/reports &eto review it.");
 
         config().set("UnbanCommand.Successful", "{prefix}&a- &6{player} &ahas been unbanned!");

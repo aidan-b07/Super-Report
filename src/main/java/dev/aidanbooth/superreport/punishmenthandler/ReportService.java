@@ -114,6 +114,24 @@ public class ReportService {
                 .replace("{action}", draft.getPunishmentType() == PunishmentType.BAN ? "banned" : "muted");
     }
 
+    // Tells a staff member how many reports are waiting. The count is read off the main thread
+    public void notifyOpenReports(Player staff) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            int open;
+            try {
+                open = reports.countActive();
+            } catch (SQLException e) {
+                logError("008", e);
+                return;
+            }
+            if (open == 0) return;
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (!staff.isOnline()) return;
+                staff.sendMessage(plugin.getMessageConfig().get("ReportCommand.JoinNotification").replace("{count}", String.valueOf(open)));
+            });
+        });
+    }
+
     // Tells online staff with superreport.notifications, except the reporter who already got their own message
     private void notifyStaff(Report report) {
         String message = plugin.getMessageConfig().get("ReportCommand.StaffNotification")

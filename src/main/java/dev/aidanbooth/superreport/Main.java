@@ -149,6 +149,7 @@ public class Main extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new AddPlayerdata(), this);
         getServer().getPluginManager().registerEvents(new BanOnJoin(), this);
         getServer().getPluginManager().registerEvents(new MuteOnTalk(), this);
+        getServer().getPluginManager().registerEvents(new ReportsOnJoin(), this);
         getServer().getPluginManager().registerEvents(pipelineManager, this);
     }
     private void registerCommands() {

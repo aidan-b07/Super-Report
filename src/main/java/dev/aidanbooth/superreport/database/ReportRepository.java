@@ -41,6 +41,10 @@ public final class ReportRepository {
         return database.query("SELECT " + COLUMNS + " FROM " + Tables.REPORTS_ACTIVE, ReportRepository::map);
     }
 
+    public int countActive() throws SQLException {
+        return database.queryFirst("SELECT COUNT(*) FROM " + Tables.REPORTS_ACTIVE, row -> row.getInt(1)).orElse(0);
+    }
+
     public boolean archive(UUID id, UUID resolver, String outcome) throws SQLException {
         return database.transaction(conn -> {
             List<Report> found = Database.query(conn,
