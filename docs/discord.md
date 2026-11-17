@@ -2,8 +2,6 @@
 
 Super-Report can post every report, ban and mute to Discord, and keeps each message up to date: when a report is dealt with, or a punishment is lifted or runs out, the original message changes to show it.
 
-<!-- SHOWCASE: a ban embed going from BANNED to LIFTED after /unban -->
-
 ## Setting it up
 
 ### 1. Create the bot

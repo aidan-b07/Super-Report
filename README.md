@@ -1,4 +1,6 @@
-<h1 align="center">Super-Report</h1>
+<p align="center">
+  <img src="docs/assets/branding/banner@2x.png" width="900" alt="Super-Report: Report. Review. Resolve.">
+</p>
 
 <p align="center">
   Player reports, bans and mutes through clean in-game menus, with a live Discord log for your staff team.
@@ -12,12 +14,9 @@
 
 <p align="center">
   <a href="docs/README.md"><b>Documentation</b></a> ·
-  <a href="DOWNLOAD_URL"><b>Download</b></a> ·
+  <a href="https://github.com/aidan-b07/Super-Report/releases/latest"><b>Download</b></a> ·
   <a href="https://discord.gg/3wqbfmX74P"><b>Support Discord</b></a>
 </p>
-
-<!-- SHOWCASE: a short GIF of /report <player> opening the reason menu and sending a report -->
-<!-- <p align="center"><img src="docs/assets/report.gif" width="700" alt="Reporting a player"></p> -->
 
 ---
 
@@ -30,12 +29,6 @@
 - **Full history.** Nothing is deleted: every report and punishment is kept with who handled it and when.
 - **Networks supported.** Share one MySQL database between servers. Bans apply everywhere and players on other servers can be reported.
 - **Everything is configurable.** Messages, menus, reasons and every part of the Discord embeds.
-
-<!-- SHOWCASE: a GIF of /reports, opening a report and banning the player through the menus -->
-<!-- <p align="center"><img src="docs/assets/reports.gif" width="700" alt="Reviewing and punishing a report"></p> -->
-
-<!-- SHOWCASE: a screenshot of a report embed and a ban embed in Discord -->
-<!-- <p align="center"><img src="docs/assets/discord.png" width="700" alt="Discord log"></p> -->
 
 ## Installation
 
@@ -111,9 +104,6 @@ The tables are created automatically. Each server needs its own `ServerName`. It
 ## Discord bot
 
 Super-Report can post every report, ban and mute to Discord, and update those messages as things change.
-
-<!-- SHOWCASE: a GIF of a ban embed updating from BANNED to LIFTED after /unban -->
-<!-- <p align="center"><img src="docs/assets/discord-update.gif" width="600" alt="An embed updating"></p> -->
 
 ### 1. Create the bot
 
