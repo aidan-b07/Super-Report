@@ -14,7 +14,7 @@ import java.util.Arrays;
 
 public class DurationInventory {
     public Inventory create(InventoryHolder holder, PunishmentDraft draft) {
-        Inventory inventory = Bukkit.createInventory(holder, 45, ChatColor.GOLD + GetDuration.getDuration(draft.getDuration()));
+        Inventory inventory = Bukkit.createInventory(holder, 45, ChatColor.GOLD + (draft.getDuration() == 0 ? "Select Time" : GetDuration.format(draft.getDuration(), 2)));
         addItems(inventory);
         return inventory;
     }

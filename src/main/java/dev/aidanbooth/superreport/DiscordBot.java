@@ -12,7 +12,6 @@ import org.bukkit.OfflinePlayer;
 
 import java.awt.*;
 import java.sql.SQLException;
-import java.util.Date;
 
 public class DiscordBot {
     private final Main plugin = Main.getPlugin(Main.class);
@@ -116,7 +115,7 @@ public class DiscordBot {
         EmbedBuilder embed = new EmbedBuilder();
         String duration = punishment.isPermanent()
                 ? "Forever!"
-                : GetDuration.getDuration(new Date(), punishment.expiresAt());
+                : GetDuration.until(punishment.expiresAt());
         String channelId;
 
         // TODO Could switch these to individual EmbedTemplate classes

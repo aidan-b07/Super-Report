@@ -19,7 +19,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -117,14 +116,14 @@ public class PunishmentService {
         String message = (ban.isPermanent() ? permanentBanMessage : temporaryBanMessage)
                 .replace("{reason}", ban.reason())
                 .replace("{banner}", PlayerUtils.GetUsername(ban.punisher()));
-        if (!ban.isPermanent()) message = message.replace("{time}", GetDuration.getDuration(new Date(), ban.expiresAt()));
+        if (!ban.isPermanent()) message = message.replace("{time}", GetDuration.until(ban.expiresAt()));
         return message;
     }
     private String getMuteMessage(Punishment mute) {
         String message = (mute.isPermanent() ? permanentMuteMessage : temporaryMuteMessage)
                 .replace("{reason}", mute.reason())
                 .replace("{muter}", PlayerUtils.GetUsername(mute.punisher()));
-        if (!mute.isPermanent()) message = message.replace("{time}", GetDuration.getDuration(new Date(), mute.expiresAt()));
+        if (!mute.isPermanent()) message = message.replace("{time}", GetDuration.until(mute.expiresAt()));
         return message;
     }
 

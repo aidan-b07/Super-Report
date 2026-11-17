@@ -1,44 +1,47 @@
 package dev.aidanbooth.superreport.utils;
 
 import java.sql.Timestamp;
-import java.util.Date;
 
-public class GetDuration {
-    public static String getDuration(Date a, Timestamp b) {
-        Date d1;
-        Timestamp d2;
-        try {
-            d1 = a;
-            d2 = b;
+public final class GetDuration {
+    public static final int PERMANENT = -1;
 
-            //in milliseconds
-            long diff = d2.getTime() - d1.getTime();
+    // Same unit lengths as the duration menu's buttons, where a month is 31 days
+    private static final long[] UNIT_SECONDS = {31536000, 2678400, 604800, 86400, 3600, 60, 1};
+    private static final String[] UNIT_NAMES = {"year", "month", "week", "day", "hour", "minute", "second"};
 
-            long diffSeconds = diff / 1000 % 60;
-            long diffMinutes = diff / (60 * 1000) % 60;
-            long diffHours = diff / (60 * 60 * 1000) % 24;
-            long diffDays = diff / (24 * 60 * 60 * 1000);
-
-            return diffDays + " days, " + diffHours + " hours, " + diffMinutes + " minutes, " + diffSeconds + " seconds.";
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "";
+    private GetDuration() {
     }
-    public static String getDuration(int seconds) {
-        try {
 
-            long numberOfDays = seconds / 86400;
-            long numberOfHours = (seconds % 86400 ) / 3600;
-            long numberOfMinutes = (seconds % 3600 ) / 60;
-            long numberOfSeconds = ((seconds % 86400 ) % 3600 ) % 60;
+    // 93784 -> "1 day, 2 hours, 3 minutes", -1 -> "Permanent"
+    public static String format(long seconds) {
+        return format(seconds, 3);
+    }
 
-            return numberOfDays + " days, " + numberOfHours + " hours, " + numberOfMinutes + " minutes, " + numberOfSeconds + " seconds.";
+    // Shows the largest unit and the next (maxUnits - 1) after it, skipping any that are zero
+    public static String format(long seconds, int maxUnits) {
+        if (seconds == PERMANENT) return "Permanent";
+        if (seconds <= 0) return "0 seconds";
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        int first = 0;
+        while (seconds < UNIT_SECONDS[first]) first++;
+
+        StringBuilder out = new StringBuilder();
+        long left = seconds;
+        for (int i = first; i < UNIT_SECONDS.length && i < first + maxUnits; i++) {
+            long amount = left / UNIT_SECONDS[i];
+            left -= amount * UNIT_SECONDS[i];
+            if (amount == 0) continue;
+            if (out.length() > 0) out.append(", ");
+            out.append(amount).append(' ').append(UNIT_NAMES[i]).append(amount == 1 ? "" : "s");
         }
-        return "";
+        return out.toString();
+    }
+
+    // Time left until expiresAt, null means permanent
+    public static String until(Timestamp expiresAt) {
+        if (expiresAt == null) return "Permanent";
+        long millisLeft = expiresAt.getTime() - System.currentTimeMillis();
+        // Round up so a ban with half a second left doesn't read "0 seconds"
+        return format(Math.max(0, (millisLeft + 999) / 1000));
     }
 }

@@ -4,7 +4,6 @@ import dev.aidanbooth.superreport.Main;
 import dev.aidanbooth.superreport.configs.MessagesConfig;
 import dev.aidanbooth.superreport.database.model.Punishment;
 import dev.aidanbooth.superreport.database.model.PunishmentType;
-import dev.aidanbooth.superreport.utils.GetDuration;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,7 +11,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.Optional;
 
 public class MuteOnTalk implements Listener {
