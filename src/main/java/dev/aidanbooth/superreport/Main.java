@@ -19,6 +19,8 @@ import dev.aidanbooth.superreport.database.PlayerRepository;
 import dev.aidanbooth.superreport.database.PunishmentRepository;
 import dev.aidanbooth.superreport.database.ReportRepository;
 import dev.aidanbooth.superreport.utils.ErrorCodes;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -68,6 +70,13 @@ public class Main extends JavaPlugin {
         if (getConfig().getBoolean("CheckForUpdates", true)) {
             getServer().getPluginManager().registerEvents(new UpdateChecker(this), this);
         }
+
+        // Init bstats
+        Metrics metrics = new Metrics(this, 35450);
+        metrics.addCustomChart(new SimplePie("storage_type",
+                () -> getConfig().getBoolean("MySQL.MySqlEnabled") ? "MySQL" : "SQLite"));
+        metrics.addCustomChart(new SimplePie("discord_bot",
+                () -> getConfig().getBoolean("DiscordBot.Enabled") ? "Enabled" : "Disabled"));
 
         getServer().getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&9&lSuper-Report &amade by &9&lSuperbility &ahas been loaded successfully!"));
     }
