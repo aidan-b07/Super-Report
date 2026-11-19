@@ -6,7 +6,7 @@
 
     <groupId>dev.aidanbooth</groupId>
     <artifactId>SuperReport</artifactId>
-    <version>2.0</version>
+    <version>2.1</version>
     <packaging>jar</packaging>
 
     <name>SuperReport</name>
@@ -96,6 +96,10 @@
                                 <relocation>
                                     <pattern>org.slf4j.</pattern>
                                     <shadedPattern>dev.aidanbooth.superreport.libs.slf4j.</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.bstats.</pattern>
+                                    <shadedPattern>dev.aidanbooth.superreport.libs.bstats.</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>
@@ -244,6 +248,13 @@
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.54.1.0</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bstats</groupId>
+            <artifactId>bstats-bukkit</artifactId>
+            <version>3.2.1</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

@@ -120,6 +120,8 @@ Colour codes use `&`. If a setting the plugin needs is missing from one of these
 
 Every option is explained in the docs: [config.yml](docs/configuration/config.md), [Messages.yml](docs/configuration/messages.md) and [the menus](docs/configuration/menus.md).
 
+Super-Report sends anonymous usage statistics to [bStats](https://bstats.org/plugin/bukkit/Super-Report/35450). To turn this off, set `enabled: false` in `plugins/bStats/config.yml`. That switch applies to every plugin on the server that uses bStats.
+
 ### MySQL
 
 To share reports and punishments between servers, point them all at the same MySQL database:
