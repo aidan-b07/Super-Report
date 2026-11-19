@@ -64,6 +64,19 @@ Bans work the same way. Pick a reason and a length, and the player is kicked str
   <img src="docs/assets/showcase/ban-sequence.gif" width="720" alt="Banning a player from a report">
 </p>
 
+### Discord log
+
+Every report, ban and mute is posted to your staff channel. The status updates on the original message when a report is handled or a punishment ends.
+
+<p align="center">
+  <img src="docs/assets/showcase/discord/discord-report.png" width="520" alt="Discord embed for a new report">
+</p>
+
+<p align="center">
+  <img src="docs/assets/showcase/discord/discord-mute.png" width="400" alt="Discord embed for a mute">
+  <img src="docs/assets/showcase/discord/discord-ban.png" width="400" alt="Discord embed for a ban">
+</p>
+
 ## Installation
 
 1. Download `SuperReport.jar` and put it in your server's `plugins` folder.
